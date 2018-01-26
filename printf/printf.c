@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   printf.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lgarczyn <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/08 16:31:30 by lgarczyn          #+#    #+#             */
-/*   Updated: 2016/08/08 16:31:32 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/01/25 22:05:05 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "printf.h"
 #include <stdarg.h>
 
-static t_bool		read_arg(const char **format, char arg)
+static bool		read_arg(const char **format, char arg)
 {
 	if (**format == arg)
 	{

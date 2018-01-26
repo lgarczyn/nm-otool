@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   printf.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lgarczyn <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/08 16:31:19 by lgarczyn          #+#    #+#             */
-/*   Updated: 2016/08/08 16:31:21 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/01/25 20:40:02 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,20 +16,13 @@
 # include "libft.h"
 # include <stdlib.h>
 # include <stdarg.h>
+# include <stdbool.h>
 
 int						ft_printf(const char *restrict format, ...);
 
 # define MIN(a,b)		(((a)<(b))?(a):(b))
 # define MAX(a,b)		(((a)>(b))?(a):(b))
 # define CLAMP(x,lo,hi)	MIN(hi, MAX(lo,x))
-
-typedef enum			e_bool
-{
-	false = 0,
-	true = 1,
-}						t_bool;
-
-typedef unsigned int	t_uint;
 
 typedef enum			e_modifier
 {
@@ -75,7 +68,7 @@ typedef struct			s_arg
 }						t_arg;
 
 intmax_t				get_int_arg(va_list arg, t_length l);
-uintmax_t				get_uint_arg(va_list arg, t_length l);
+uintmax_t				get_u32_arg(va_list arg, t_length l);
 
 void					putchar_padded(int c, t_info info);
 

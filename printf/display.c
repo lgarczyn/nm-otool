@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   display.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lgarczyn <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/10 06:57:37 by lgarczyn          #+#    #+#             */
-/*   Updated: 2016/08/10 06:57:38 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/01/25 22:06:14 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ intmax_t			get_int_arg(va_list arg, t_length l)
 	return (0);
 }
 
-uintmax_t			get_uint_arg(va_list arg, t_length l)
+uintmax_t			get_u32_arg(va_list arg, t_length l)
 {
 	if (l == l_hh)
 		return (uintmax_t)(unsigned char)(va_arg(arg, unsigned int));
@@ -85,7 +85,7 @@ uintmax_t			get_uint_arg(va_list arg, t_length l)
 
 void				display(char format, t_info info, va_list list)
 {
-	t_uint			i;
+	size_t			i;
 	t_info			def;
 
 	i = 0;

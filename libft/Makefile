@@ -6,7 +6,7 @@
 #    By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/05/06 14:07:52 by lgarczyn          #+#    #+#              #
-#    Updated: 2018/01/23 21:26:32 by lgarczyn         ###   ########.fr        #
+#    Updated: 2018/01/25 22:04:43 by lgarczyn         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -98,6 +98,7 @@ SRC = ft_atoi.c \
 	  ft_putnchar_buf.c \
 	  ft_putwchar_buf.c \
 	  ft_putendl_buf.c \
+	  ft_putnendl_buf.c \
 	  ft_putnbr_buf.c \
 	  ft_putnendl_buf.c \
 	  ft_putspace_buf.c \
@@ -116,7 +117,6 @@ RM = rm -f
 
 NOM = $(basename $(SRC))
 OBJ = $(addsuffix .o, $(NOM))
-DEB = -g
 
 all: $(NAME)
 

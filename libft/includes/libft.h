@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/07 16:18:53 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/23 21:46:11 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/01/25 22:14:04 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,14 @@
 # include <string.h>
 # include <errno.h>
 # include <stdlib.h>
+
+# define U32 typedef uint32_t u32;
+# define U64 typedef uint64_t u64;
+# define I32 typedef int32_t i32;
+# define I64 typedef int64_t i64;
+# define ILLEGAL {}; U32 U64 I32 I64
+
+static int g_a[0] = ILLEGAL;
 
 # define MIN(a,b)			(((a)<(b))?(a):(b))
 # define MAX(a,b)			(((a)>(b))?(a):(b))
@@ -56,6 +64,7 @@ void				ft_putchar_buf(char c);
 void				ft_putnchar_buf(char c, int n);
 void				ft_putwchar_buf(wchar_t wc);
 void				ft_putendl_buf(const char *str);
+void				ft_putnendl_buf(const char *str, size_t n);
 void				ft_putnbr_buf(int n);
 void				ft_putspace_buf(size_t len);
 void				ft_putnstr_buf(const char *str, size_t len);

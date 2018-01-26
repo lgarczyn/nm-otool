@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   display.c                                          :+:      :+:    :+:   */
+/*   display_int.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lgarczyn <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/10 06:57:48 by lgarczyn          #+#    #+#             */
-/*   Updated: 2016/08/10 06:57:49 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/01/25 20:40:22 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 
 static void			display_final(char *header, char *number, t_info info)
 {
-	t_bool			zero_padded;
-	t_bool			left_justified;
+	bool			zero_padded;
+	bool			left_justified;
 	int				padding;
 	int				spacing;
 	int				num_len;
@@ -45,7 +45,7 @@ static void			fill_uint(char *buf, uintmax_t n, t_info info)
 	static char		dicl[] = "0123456789abcdef";
 	static char		dicu[] = "0123456789ABCDEF";
 	uintmax_t		mod;
-	t_bool			uppercase;
+	bool			uppercase;
 
 	uppercase = info.modifiers & m_uppercase;
 	while (n > 0)
@@ -97,7 +97,7 @@ void				display_int(va_list arg, t_info info)
 
 	if (info.modifiers & m_unsigned)
 	{
-		unum = get_uint_arg(arg, info.input_len);
+		unum = get_u32_arg(arg, info.input_len);
 		sign = unum > 0;
 	}
 	else

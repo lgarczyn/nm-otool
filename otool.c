@@ -6,37 +6,23 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:32 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/23 21:52:32 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/01/25 22:25:12 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <libft.h>
+#include "nm_otool.h"
 
-void			*map(char *filename)
-{
-	int			fd;
-	char		*data;
-	struct stat	st;
-
-	if (stat(filename, &st) != 0)
-		return (NULL);
-	fd = open(filename, O_RDONLY);
-	if (fd < 0)
-		return (NULL);
-	data = mmap(0, st.st_size, PROT_READ, 0, fd, 0);
-	return (data);
-}
-
-int				fn(char *filename)
+int				otool(char *filename)
 {
 	char		*data;
+	u64			len;
 
-	data = (char*)map(filename);
+	data = (char*)map(filename, &len);
 	if (data == NULL)
 		return (1);
+	
+
+	munmap(data, len);
 	return (0);
 }
 
@@ -44,16 +30,17 @@ int				main(int argc, char **argv)
 {
 	int			i;
 
-	ft_buf(malloc(4096), 4096, 1);
 	if (argc == 1)
 	{
-		if (fn("a.out"))
-			ft_perror_file_buf(argv[0], "a.out");
+		ft_putstr_fd(argv[0], 2);
+		ft_putstr_fd(": at least one file must be specified", 2);
+		return -1;
 	}
+	ft_buf(malloc(4096), 4096, 1);
 	i = 0;
 	while (++i < argc)
 	{
-		if (fn("a.out"))
+		if (otool("a.out"))
 			ft_perror_file_buf(argv[0], argv[i]);
 	}
 	return (errno);
