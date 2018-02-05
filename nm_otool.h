@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/26 02:40:54 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/01/26 17:05:31 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,12 @@
 # define NM_OTOOL_H
 
 # include <sys/mman.h>
-# include <libft.h>
 # include <stdbool.h>
 
 # include <mach-o/loader.h>
+
+# include <libft.h>
+# include <public.h>
 
 typedef struct mach_header						t_mach_header;
 typedef struct mach_header_64					t_mach_header_64;
@@ -67,31 +69,37 @@ typedef struct tlv_descript						t_tlv_descript;
 typedef union									u_cmd {
 	t_load_command								load;
 	t_segment_command_32						name;
-	t_segment_command_32						segment_32;
-	t_segment_command_64						segment_64;
+	t_segment_command_32						seg32;
+	t_segment_command_64						seg64;
 	t_fvmlib_command							fvmlib;
 	t_dylib_command								dylib;
 }												t_cmd;
 
-typedef struct									s_env {
+typedef struct									s_vm {
 	char										*data;
 	u64											len;
 	u32											type;
 	u32											ncmds;
 	bool										is_swap;
 	bool										is_64;
-}												t_env;
+}												t_vm;
 
-void		*map(char *filename, u64 *len);
-void		putnstr_clean(char *str, size_t n);
+void											*map(char *filename, u64 *len);
+int												get_vm(t_vm *f, char *filename);
 
-u32			swap(u32 i);
-u64			swap_64(u64 i);
-void		swap_header(t_mach_header *header, bool is_swap);
-void		swap_load(t_load_command *cmd, bool is_swap);
-void		swap_segment_64(t_segment_command_64 *seg, bool is_swap);
-void		swap_segment_32(t_segment_command_32 *seg, bool is_swap);
-void		swap_section_64(t_section_64 *sect, bool is_swap);
-void		swap_section_32(t_section_32 *sect, bool is_swap);
+void											putdata(char *file, size_t offset, size_t size, size_t vm);
+
+u32												swap(u32 i);
+u64												swap_64(u64 i);
+void											swap_header(t_mach_header *header, bool is_swap);
+void											swap_load(t_load_command *cmd, bool is_swap);
+void											swap_segment_64(t_segment_command_64 *seg, bool is_swap);
+void											swap_segment_32(t_segment_command_32 *seg, bool is_swap);
+void											swap_section_64(t_section_64 *sect, bool is_swap);
+void											swap_section_32(t_section_32 *sect, bool is_swap);
+
+#define BREAK(A) do { return(1000 + A); } while (0)
+
+#define CHECK_LEN(l) do { if (l > vm.len) BREAK(__COUNTER__); } while (0)
 
 #endif

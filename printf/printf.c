@@ -6,14 +6,14 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/08 16:31:30 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/25 22:05:05 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/05 18:57:01 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "printf.h"
 #include <stdarg.h>
 
-static bool		read_arg(const char **format, char arg)
+static bool			read_arg(const char **format, char arg)
 {
 	if (**format == arg)
 	{

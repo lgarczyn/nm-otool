@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:32 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/25 22:25:12 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/01/26 13:56:42 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,7 @@ int				otool(char *filename)
 
 	data = (char*)map(filename, &len);
 	if (data == NULL)
-		return (1);
-	
+		return (1);	
 
 	munmap(data, len);
 	return (0);
@@ -34,7 +33,7 @@ int				main(int argc, char **argv)
 	{
 		ft_putstr_fd(argv[0], 2);
 		ft_putstr_fd(": at least one file must be specified", 2);
-		return -1;
+		return (-1);
 	}
 	ft_buf(malloc(4096), 4096, 1);
 	i = 0;

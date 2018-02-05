@@ -6,36 +6,33 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 00:14:29 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/26 02:40:43 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/01/26 14:01:30 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "nm_otool.h"
 
-#        include <stdio.h>
-
 u32				swap(u32 x)
 {
-	return
-		((x >> 24) & 0xff) |
-		((x << 8) & 0xff0000) |
-		((x >> 8) & 0xff00) |
-		((x << 24) & 0xff000000);
+	return ((x >> 24) & 0xff) | \
+	((x << 8) & 0xff0000) | \
+	((x >> 8) & 0xff00) | \
+	((x << 24) & 0xff000000);
 }
 
 u64				swap_64(u64 x)
 {
 	x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
 	x = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16;
-	x = (x & 0x00FF00FF00FF00FF) << 8  | (x & 0xFF00FF00FF00FF00) >> 8;
-	return x;
+	x = (x & 0x00FF00FF00FF00FF) << 8 | (x & 0xFF00FF00FF00FF00) >> 8;
+	return (x);
 }
 
 void			swap_header(t_mach_header *header, bool is_swap)
 {
 	if (is_swap)
 	{
-		printf("WTF BIG ENDIAN\n");
+		ft_putstr("WTF BIG ENDIAN\n");
 		header->magic = swap(header->magic);
 		header->filetype = swap(header->filetype);
 		header->ncmds = swap(header->ncmds);
