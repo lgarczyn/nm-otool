@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/08 21:34:00 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/25 20:50:20 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/08 00:38:14 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,6 @@
 
 int					ft_flush_buf(void)
 {
-	static t_buffer	*buffer;
-	size_t			ret;
-
-	if (!buffer)
-		buffer = ft_buf(NULL, 0, 0);
-	ft_flush_buf_overflow();
-	ret = buffer->total;
-	buffer->total = 0;
-	buffer->pos = 0;
-	return (ret);
+	ft_flush_overflow();
+	return (ft_flush_total());
 }

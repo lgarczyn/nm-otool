@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/07 16:18:53 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/25 22:14:04 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/08 00:41:16 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,12 @@
 # include <errno.h>
 # include <stdlib.h>
 
+# define U8 typedef uint8_t u8;
+# define U16 typedef uint16_t u16;
 # define U32 typedef uint32_t u32;
 # define U64 typedef uint64_t u64;
+# define I8 typedef int8_t i8;
+# define I16 typedef int16_t i16;
 # define I32 typedef int32_t i32;
 # define I64 typedef int64_t i64;
 # define ILLEGAL {}; U32 U64 I32 I64
@@ -59,7 +63,8 @@ void				ft_perror_file_buf(const char *str, const char *file);
 t_buffer			*ft_buf(char *buffer, size_t size, int fd);
 t_buffer			*ft_get_buf(void);
 int					ft_flush_buf(void);
-void				ft_flush_buf_overflow(void);
+int					ft_flush_total(void);
+void				ft_flush_overflow(void);
 void				ft_putchar_buf(char c);
 void				ft_putnchar_buf(char c, int n);
 void				ft_putwchar_buf(wchar_t wc);

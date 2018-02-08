@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 00:14:29 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/26 14:01:30 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/08 01:43:25 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,19 +26,6 @@ u64				swap_64(u64 x)
 	x = (x & 0x0000FFFF0000FFFF) << 16 | (x & 0xFFFF0000FFFF0000) >> 16;
 	x = (x & 0x00FF00FF00FF00FF) << 8 | (x & 0xFF00FF00FF00FF00) >> 8;
 	return (x);
-}
-
-void			swap_header(t_mach_header *header, bool is_swap)
-{
-	if (is_swap)
-	{
-		ft_putstr("WTF BIG ENDIAN\n");
-		header->magic = swap(header->magic);
-		header->filetype = swap(header->filetype);
-		header->ncmds = swap(header->ncmds);
-		header->sizeofcmds = swap(header->sizeofcmds);
-		header->flags = swap(header->flags);
-	}
 }
 
 void			swap_load(t_load_command *cmd, bool is_swap)

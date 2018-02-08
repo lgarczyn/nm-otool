@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/10 16:24:51 by lgarczyn          #+#    #+#             */
-/*   Updated: 2015/05/10 16:31:46 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/08 01:12:38 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,13 @@
 
 void				ft_setfd_buf(int fd)
 {
-	t_buffer		*buffer;
+	static t_buffer	*buffer;
 
-	buffer = ft_buf(NULL, 0, 0);
-	buffer->fd = fd;
+	if (buffer == NULL)
+		buffer = ft_buf(NULL, 0, 0);
+	if (buffer->fd != fd)
+	{
+		ft_flush_buf();
+		buffer->fd = fd;
+	}
 }

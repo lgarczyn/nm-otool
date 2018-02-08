@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/08 16:31:30 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/05 18:57:01 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/08 00:31:53 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,15 +84,13 @@ static int			get_width(const char **format, char starter)
 	return (-1);
 }
 
-int					ft_printf(const char *restrict format, ...)
+void				ft_printf(const char *restrict format, ...)
 {
-	char			buf[100];
 	va_list			ap;
 	t_info			info;
 	const char		*str;
 
 	str = format;
-	ft_buf(buf, 100, 1);
 	va_start(ap, format);
 	while (*str)
 	{
@@ -109,5 +107,4 @@ int					ft_printf(const char *restrict format, ...)
 		str++;
 	}
 	va_end(ap);
-	return (ft_flush_buf());
 }

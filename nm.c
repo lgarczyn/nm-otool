@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:15 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/05 18:56:14 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/08 03:35:07 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,8 @@ int					disp_sections(t_vm vm, u64 offset, u64 n, u64 vmaddr)
 	u64				sec_size;
 
 	i = 0;
-	CHECK_LEN(offset + n * (vm.is_64 ?
-		sizeof(t_section_64) :
-		sizeof(t_section_32)));
+	CHECK_LEN(offset +
+		n * (vm.is_64 ? sizeof(t_section_64) : sizeof(t_section_32)));
 	sections_64 = (t_section_64*)(vm.data + offset);
 	sections_32 = (t_section_32*)(vm.data + offset);
 	while (i < n)
@@ -33,6 +32,7 @@ int					disp_sections(t_vm vm, u64 offset, u64 n, u64 vmaddr)
 		sec_size = vm.is_64 ? sections_64[i].size : sections_32[i].size;
 		if (strncmp(sec_name, SECT_TEXT, sizeof(SECT_TEXT)) == 0)
 		{
+			printf("Contents of (__TEXT,__text) section\n");
 			CHECK_LEN(offset + sec_size);
 			putdata(vm.data, offset, sec_size, vmaddr);
 		}
@@ -97,7 +97,7 @@ void				disp_file(char *prog, char *file)
 	t_vm			vm;
 
 	vm.data = NULL;
-	r = get_vm(&vm, file);
+	r = get_vm(0, &vm, file);
 	if (r == 0)
 		r = disp_segments(vm);
 

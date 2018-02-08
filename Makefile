@@ -20,7 +20,7 @@ OBJ = $(SRC:.c=.o)
 
 LIB = -L libft/ -lft
 
-DEB = -g
+DEB = 
 
 OPT = -O2
 

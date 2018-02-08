@@ -1,27 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_flush_buf_overflow.c                            :+:      :+:    :+:   */
+/*   ft_flush_total.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2015/05/08 21:34:00 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/25 20:50:08 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/08 02:38:10 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 #include <unistd.h>
 
-void				ft_flush_buf_overflow(void)
+int					ft_flush_total(void)
 {
 	static t_buffer	*buffer;
-	ssize_t			ret;
+	size_t			ret;
 
 	if (!buffer)
 		buffer = ft_buf(NULL, 0, 0);
-	ret = write(buffer->fd, buffer->buffer, buffer->pos);
-	if (ret == -1)
-		ft_perror(NULL);
-	buffer->pos = 0;
+	ret = buffer->total;
+	buffer->total = 0;
+	return (ret);
 }

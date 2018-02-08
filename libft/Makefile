@@ -6,7 +6,7 @@
 #    By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/05/06 14:07:52 by lgarczyn          #+#    #+#              #
-#    Updated: 2018/01/25 22:04:43 by lgarczyn         ###   ########.fr        #
+#    Updated: 2018/02/08 00:39:16 by lgarczyn         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -92,7 +92,8 @@ SRC = ft_atoi.c \
 	  ft_toupper.c \
 	  ft_buf.c \
 	  ft_flush_buf.c \
-	  ft_flush_buf_overflow.c \
+	  ft_flush_total.c \
+	  ft_flush_overflow.c \
 	  ft_get_buf.c \
 	  ft_putchar_buf.c \
 	  ft_putnchar_buf.c \
