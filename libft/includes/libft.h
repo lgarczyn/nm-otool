@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/07 16:18:53 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/08 00:41:16 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/09 00:44:20 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 # define I16 typedef int16_t i16;
 # define I32 typedef int32_t i32;
 # define I64 typedef int64_t i64;
-# define ILLEGAL {}; U32 U64 I32 I64
+# define ILLEGAL {}; U8 U16 U32 U64 I8 I16 I32 I64
 
 static int g_a[0] = ILLEGAL;
 

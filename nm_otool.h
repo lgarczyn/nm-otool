@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/08 03:28:33 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/09 03:10:11 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,21 +80,26 @@ typedef union				u_cmd {
 	t_dylib_command			dylib;
 }							t_cmd;
 
+typedef struct				s_mem {
+	u8						*data;
+	u64						addr;
+	u64						size;
+}							t_mem;
+
 typedef struct				s_vm {
-	char					*data;
-	u64						len;
-	u32						type;
+	t_mem					mem;
 	u32						ncmds;
+	const char				*cpu;
 	bool					is_swap;
 	bool					is_64;
 	bool					is_fat;
 }							t_vm;
 
-void						*map(char *filename, u64 *len);
-int							get_vm(u64 offset, t_vm *f, char *filename);
+t_mem						map(char *filename);
+int							get_vm(t_vm *f, t_mem mem);
 const char					*get_cpu(cpu_type_t cpu, bool is_swap);
 
-void						putdata(char *f, size_t o, size_t s, size_t vm);
+void						putdata(u8 *f, size_t o, size_t s, size_t vm);
 
 u32							swap(u32 i);
 u64							swap_64(u64 i);
@@ -107,6 +112,6 @@ void						swap_section_32(t_section_32 *sect, bool is_swap);
 
 # define BREAK(A) do { return(1000 + A); } while (0)
 
-# define CHECK_LEN(l) do { if (l > vm.len) BREAK(__COUNTER__); } while (0)
+# define CHECK_LEN(l) do { if (l > vm.mem.size) BREAK(__COUNTER__); } while (0)
 
 #endif

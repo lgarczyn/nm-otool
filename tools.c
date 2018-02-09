@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/08 03:34:43 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/09 03:46:33 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,23 +14,26 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <stdio.h>
 
-void				*map(char *filename, u64 *len)
+t_mem				map(char *filename)
 {
 	int				fd;
-	char			*data;
 	struct stat		st;
+	t_mem			out;
 
+	out.data = NULL;
 	if (stat(filename, &st) != 0)
-		return (NULL);
+		return (out);
 	fd = open(filename, O_RDONLY);
 	if (fd < 0)
-		return (NULL);
-	data = mmap(0, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-	*len = st.st_size;
+		return (out);
+	if (st.st_size == 0)
+		return (out);
+	out.data = mmap(0, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	out.addr = 0;
+	out.size = st.st_size;
 	close(fd);
-	return (data);
+	return (out);
 }
 
 int					get_type(u32 m, bool *is_swap, bool *is_64, bool *is_fat)
@@ -69,37 +72,31 @@ const char			*get_cpu(cpu_type_t cpu, bool is_swap)
 	return ("unknown");
 }
 
-int					get_vm(u64 offset, t_vm *vm, char *filename)
+int					get_vm(t_vm *vm, t_mem mem)
 {
 	t_mach_header	*mach_header;
 	t_fat_header	*fat_header;
 
-	// vm->data = (char*)map(filename, &vm->len);
-	// if (vm->data == NULL)
-	// 	return (1);
-	// if (sizeof(t_mach_header) > vm->len)
-	// 	return 2;
-	mach_header = (t_mach_header*)vm->data;
-	fat_header = (t_fat_header*)vm->data;
+	if (sizeof(t_mach_header) > mem.size)
+		return (2);
+	mach_header = (t_mach_header*)mem.data + mem.addr;
+	fat_header = (t_fat_header*)mach_header;
+	vm->mem = mem;
 	if (get_type(mach_header->magic, &vm->is_swap, &vm->is_64, &vm->is_fat))
-		return 3;
+		return (3);
 	if (vm->is_fat)
 		vm->ncmds = fat_header->nfat_arch;
 	else
+	{
+		vm->cpu = get_cpu(mach_header->cputype, vm->is_swap);
 		vm->ncmds = mach_header->ncmds;
+	}
 	if (vm->is_swap)
 		vm->ncmds = swap(vm->ncmds);
-	if (vm->is_fat)
-		return (0);
-	if (offset == 0)
-		printf("%s:\n", filename);
-	else
-		printf("%s (architecture %s):\n",
-			filename, get_cpu(mach_header->cputype, vm->is_swap));
 	return (0);
 }
 
-void				putdata(char *file, size_t offset, size_t size, size_t vm)
+void				putdata(u8 *file, size_t offset, size_t size, size_t vm)
 {
 	size_t			i;
 
@@ -108,9 +105,7 @@ void				putdata(char *file, size_t offset, size_t size, size_t vm)
 	{
 		if (i % 16 == 0)
 			printf("%016lx\t", offset + vm + i);
-
 		printf("%02x ", file[offset + i]);
-
 		if (i % 16 == 15)
 			printf("\n");
 		i++;

@@ -16,6 +16,7 @@ SRC =	printf.c \
 		display.c \
 		display_text.c \
 		display_int.c \
+		wrappers.c
 
 INC = ../libft/includes
 		

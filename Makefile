@@ -18,7 +18,7 @@ INC = -Ilibft/includes -Iprintf
 		
 OBJ = $(SRC:.c=.o)
 
-LIB = -L libft/ -lft
+LIB = -L libft/ -lft -L printf -lftprintf
 
 DEB = 
 
@@ -32,7 +32,7 @@ $(NAME):$(OBJ)
 	cd libft && make
 	cd printf && make
 	gcc -o ft_nm nm.c $(OBJ) $(INC) $(FLG) $(LIB)
-	gcc -o ft_otool otool.c $(OBJ) $(INC) $(FLG) $(LIB)
+	#gcc -o ft_otool otool.c $(OBJ) $(INC) $(FLG) $(LIB)
 	
 %.o: %.c
 	gcc $(INC) $(FLG) -c $< $
