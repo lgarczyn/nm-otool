@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/09 03:10:11 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/13 01:22:48 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,9 @@ const char					*get_cpu(cpu_type_t cpu, bool is_swap);
 
 void						putdata(u8 *f, size_t o, size_t s, size_t vm);
 
+
+u32							s(u32 x, bool is_swap);
+u64							sl(u64 x, bool is_swap);
 u32							swap(u32 i);
 u64							swap_64(u64 i);
 void						swap_header(t_mach_header *header, bool is_swap);
@@ -110,8 +113,11 @@ void						swap_segment_32(t_segment_command_32 *seg, bool is_swap);
 void						swap_section_64(t_section_64 *sect, bool is_swap);
 void						swap_section_32(t_section_32 *sect, bool is_swap);
 
-# define BREAK(A) do { return(1000 + A); } while (0)
+# define BREAK(A) do { return(1000000 + 1000 * __LINE__ + A); } while (0)
 
-# define CHECK_LEN(l) do { if (l > vm.mem.size) BREAK(__COUNTER__); } while (0)
+# define CHECK_LEN(l) do { if (l > vm.mem.size) {\
+	printf("failed check len %llu against size %llu\nfile: %s line: %i\n", l, vm.mem.size, __FILE__, __LINE__);\
+	BREAK(__COUNTER__);\
+ }} while (0)
 
 #endif

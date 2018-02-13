@@ -18,7 +18,7 @@ INC = -Ilibft/includes -Iprintf
 		
 OBJ = $(SRC:.c=.o)
 
-LIB = -L libft/ -lft -L printf -lftprintf
+LIB = -L libft/ -lft #-L printf -lftprintf
 
 DEB = 
 

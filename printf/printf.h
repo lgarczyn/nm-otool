@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/08 16:31:19 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/08 02:16:52 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/12 22:59:33 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,9 @@
 # include <stdlib.h>
 # include <stdarg.h>
 # include <stdbool.h>
+# include <stdarg.h>
 
-void					ft_printf(const char *restrict format, ...);
+void					ft_printf(const char *restrict format, va_list ap);
 
 # define MIN(a,b)		(((a)<(b))?(a):(b))
 # define MAX(a,b)		(((a)>(b))?(a):(b))

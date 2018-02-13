@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:15 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/09 04:10:39 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/13 01:23:28 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,8 @@ int					disp_sections(t_vm vm, u64 offset, u64 n, u64 vmaddr)
 	while (i < n)
 	{
 		sec_name = vm.is_64 ? sections_64[i].sectname : sections_32[i].sectname;
-		offset = vm.is_64 ? sections_64[i].offset : sections_32[i].offset;
-		sec_size = vm.is_64 ? sections_64[i].size : sections_32[i].size;
+		offset = vm.is_64 ? sl(sections_64[i].offset, vm.is_swap) : s(sections_32[i].offset, vm.is_swap);
+		sec_size = vm.is_64 ? sl(sections_64[i].size, vm.is_swap) : s(sections_32[i].size, vm.is_swap);
 		if (strncmp(sec_name, SECT_TEXT, sizeof(SECT_TEXT)) == 0)
 		{
 			printf("Contents of (__TEXT,__text) section\n");
@@ -115,6 +115,7 @@ t_mem				get_arch_map(t_vm vm, void *ptr)
 		out.addr = vm.is_swap ? swap(fat_32->offset) : fat_32->offset;
 		out.size = vm.is_swap ? swap(fat_32->size) : fat_32->size;
 	}
+	out.size += out.addr;
 	return (out);
 }
 
@@ -126,14 +127,15 @@ int					disp_archs(t_vm vm, char *file)
 	t_mem			archmem;
 	void			*ptr;
 
-	CHECK_LEN(sizeof(t_fat_header) +
-		vm.ncmds * vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch));
+	CHECK_LEN((u64)sizeof(t_fat_header) +
+		vm.ncmds * (vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch)));
 	i = 0;
 	ptr = vm.mem.data + sizeof(t_fat_header);
 	while (i < vm.ncmds)
 	{
 		archmem = get_arch_map(vm, ptr);
-		CHECK_LEN(archmem.addr + archmem.size);
+		CHECK_LEN(archmem.size);
+		archvm.ncmds = 0;
 		r = get_vm(&archvm, archmem);
 		if (r == 0 && archvm.is_fat)
 			r = 1000;
@@ -153,16 +155,12 @@ void				disp_file(char *prog, char *file)
 	t_vm			vm;
 	t_mem			mem;
 
-	printf("%s\n", file);
 	r = 0;
 	mem = map(file);
 	if (mem.data == NULL)
 		r = 1;
-	printf("%s\n", file);
-		
 	if (r == 0)
 		r = get_vm(&vm, mem);
-	printf("%s\n", file);
 	if (r == 0)
 	{
 		if (vm.is_fat)
@@ -170,12 +168,10 @@ void				disp_file(char *prog, char *file)
 		else
 			r = disp_segments(vm, file);
 	}
-	printf("%s\n", file);
 	if (r == 1)
 		ft_perror_file_buf(prog, file);
 	else if (r > 1)
 		printf("fuck %s: %i\n", file, r);
-	printf("%s\n", file);
 	if (mem.data != NULL)
 		munmap(mem.data, mem.size);
 }

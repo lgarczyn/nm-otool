@@ -6,12 +6,11 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/08 16:31:30 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/08 00:31:53 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/12 22:59:08 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "printf.h"
-#include <stdarg.h>
 
 static bool			read_arg(const char **format, char arg)
 {
@@ -84,14 +83,12 @@ static int			get_width(const char **format, char starter)
 	return (-1);
 }
 
-void				ft_printf(const char *restrict format, ...)
+void				ft_printf(const char *restrict format, va_list ap)
 {
-	va_list			ap;
 	t_info			info;
 	const char		*str;
 
 	str = format;
-	va_start(ap, format);
 	while (*str)
 	{
 		if (read_arg(&str, '%'))
@@ -106,5 +103,4 @@ void				ft_printf(const char *restrict format, ...)
 			ft_putchar_buf(*str);
 		str++;
 	}
-	va_end(ap);
 }

@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/09 03:46:33 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/13 01:22:57 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,27 +72,28 @@ const char			*get_cpu(cpu_type_t cpu, bool is_swap)
 	return ("unknown");
 }
 
-int					get_vm(t_vm *vm, t_mem mem)
+int					get_vm(t_vm *out, t_mem mem)
 {
 	t_mach_header	*mach_header;
 	t_fat_header	*fat_header;
+	t_vm			vm;
 
-	if (sizeof(t_mach_header) > mem.size)
-		return (2);
-	mach_header = (t_mach_header*)mem.data + mem.addr;
+	vm.mem = mem;
+	CHECK_LEN(sizeof(t_mach_header) + mem.addr);
+	mach_header = (t_mach_header*)(mem.data + mem.addr);
 	fat_header = (t_fat_header*)mach_header;
-	vm->mem = mem;
-	if (get_type(mach_header->magic, &vm->is_swap, &vm->is_64, &vm->is_fat))
+	if (get_type(mach_header->magic, &vm.is_swap, &vm.is_64, &vm.is_fat))
 		return (3);
-	if (vm->is_fat)
-		vm->ncmds = fat_header->nfat_arch;
+	if (vm.is_fat)
+		vm.ncmds = fat_header->nfat_arch;
 	else
 	{
-		vm->cpu = get_cpu(mach_header->cputype, vm->is_swap);
-		vm->ncmds = mach_header->ncmds;
+		vm.cpu = get_cpu(mach_header->cputype, vm.is_swap);
+		vm.ncmds = mach_header->ncmds;
 	}
-	if (vm->is_swap)
-		vm->ncmds = swap(vm->ncmds);
+	if (vm.is_swap)
+		vm.ncmds = swap(vm.ncmds);
+	*out = vm;
 	return (0);
 }
 
