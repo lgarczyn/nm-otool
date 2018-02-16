@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/13 01:22:57 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/16 02:07:15 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,9 +52,9 @@ int					get_type(u32 m, bool *is_swap, bool *is_64, bool *is_fat)
 const char			*get_cpu(cpu_type_t cpu, bool is_swap)
 {
 	static char		*names[] = {
-		"", "vax", "romp", "ns32032", "ns32332", "i386",
-		"mips", "ns32532", "hppa", "arm", "mc88000", "sparc",
-		"i860", "i860_little", "rs6000", "powerpc"
+		"", "vax", "romp", "", "ns32032", "ns32332", "", "i386",
+		"mips", "ns32532", "", "hppa", "arm", "mc88000", "sparc",
+		"i860", "i860_little", "rs6000", "ppc"
 	};
 
 	if (is_swap)
@@ -64,7 +64,7 @@ const char			*get_cpu(cpu_type_t cpu, bool is_swap)
 	if (cpu == CPU_TYPE_X86_64)
 		return ("x86_64");
 	if (cpu == CPU_TYPE_POWERPC64)
-		return ("powerpc64");
+		return ("ppc64");
 	if (cpu == CPU_TYPE_ARM64)
 		return ("arm64");
 	if (cpu >= CPU_TYPE_VAX && cpu <= CPU_TYPE_POWERPC)
@@ -85,7 +85,10 @@ int					get_vm(t_vm *out, t_mem mem)
 	if (get_type(mach_header->magic, &vm.is_swap, &vm.is_64, &vm.is_fat))
 		return (3);
 	if (vm.is_fat)
+	{
 		vm.ncmds = fat_header->nfat_arch;
+		vm.cpu = NULL;
+	}
 	else
 	{
 		vm.cpu = get_cpu(mach_header->cputype, vm.is_swap);
@@ -94,19 +97,25 @@ int					get_vm(t_vm *out, t_mem mem)
 	if (vm.is_swap)
 		vm.ncmds = swap(vm.ncmds);
 	*out = vm;
+	//printf("GOT VM cpu:%x swap:%i 64:%i fat:%i\n", s(mach_header->cputype, vm.is_swap), vm.is_swap, vm.is_64, vm.is_fat);
 	return (0);
 }
 
-void				putdata(u8 *file, size_t offset, size_t size, size_t vm)
+void				putdata(t_vm vm, u8 *data, size_t size, size_t addr)
 {
 	size_t			i;
 
 	i = 0;
 	while (i < size)
 	{
-		if (i % 16 == 0)
-			printf("%016lx\t", offset + vm + i);
-		printf("%02x ", file[offset + i]);
+		if (i % 16 == 0 && vm.is_64)
+			printf("%016lx\t", addr + i);
+		else if (i % 16 == 0)
+			printf("%08lx\t", addr + i);
+		if (vm.is_swap && i % 4 != 3)
+			printf("%02x", data[i]);
+		else
+			printf("%02x ", data[i]);
 		if (i % 16 == 15)
 			printf("\n");
 		i++;

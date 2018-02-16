@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/13 01:22:48 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/16 02:58:54 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,8 +99,7 @@ t_mem						map(char *filename);
 int							get_vm(t_vm *f, t_mem mem);
 const char					*get_cpu(cpu_type_t cpu, bool is_swap);
 
-void						putdata(u8 *f, size_t o, size_t s, size_t vm);
-
+void						putdata(t_vm vm, u8 *data, size_t size, size_t addr);
 
 u32							s(u32 x, bool is_swap);
 u64							sl(u64 x, bool is_swap);
