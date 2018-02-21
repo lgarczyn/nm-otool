@@ -4,5 +4,6 @@
 ._*
 .DS_Store
 *.dSYM/
+*.txt
 ft_nm
 ft_otool
