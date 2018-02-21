@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/16 02:58:54 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/21 05:50:48 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,9 +80,10 @@ typedef union				u_cmd {
 	t_dylib_command			dylib;
 }							t_cmd;
 
+//TODO add cpu ?
 typedef struct				s_mem {
 	u8						*data;
-	u64						addr;
+	u64						offset;
 	u64						size;
 }							t_mem;
 
@@ -115,7 +116,7 @@ void						swap_section_32(t_section_32 *sect, bool is_swap);
 # define BREAK(A) do { return(1000000 + 1000 * __LINE__ + A); } while (0)
 
 # define CHECK_LEN(l) do { if (l > vm.mem.size) {\
-	printf("failed check len %llu against size %llu\nfile: %s line: %i\n", l, vm.mem.size, __FILE__, __LINE__);\
+	printf("failed check len %llu against size %llu\nfile: %s line: %i\n", (u64)l, vm.mem.size, __FILE__, __LINE__);\
 	BREAK(__COUNTER__);\
  }} while (0)
 

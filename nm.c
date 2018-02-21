@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:15 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/16 02:56:17 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/21 05:51:32 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,14 +59,14 @@ int					disp_sections(t_vm vm, u64 offset, u64 n, u64 vmaddr)
 		}*/
 
 		sec_name = vm.is_64 ? sections_64[i].sectname : sections_32[i].sectname;
-		offset = vm.is_64 ? sl(sections_64[i].offset, vm.is_swap) : s(sections_32[i].offset, vm.is_swap);
+		offset = vm.is_64 ? sl(sections_64[i].addr, vm.is_swap) : s(sections_32[i].addr, vm.is_swap);
 		sec_size = vm.is_64 ? sl(sections_64[i].size, vm.is_swap) : s(sections_32[i].size, vm.is_swap);
 		if (strncmp(sec_name, SECT_TEXT, sizeof(SECT_TEXT)) == 0)
 		{
 			printf("Contents of (__TEXT,__text) section\n");
-			CHECK_LEN(offset + vmaddr + sec_size);
+			CHECK_LEN(offset - vmaddr + sec_size);
 			(void)vmaddr;
-			putdata(vm, vm.mem.data + offset + vmaddr, sec_size, vmaddr + offset);
+			putdata(vm, &vm.mem.data[offset - vmaddr], sec_size, offset);
 		}
 		i++;
 	}
@@ -148,19 +148,18 @@ uint32_t	flags		%u\n",
 	return (0);
 }
 
-int					disp_segments(t_vm vm, char *file)
+int					disp_segments(t_vm vm, char *file, const char *cpu)
 {
 	u64				offset;
 	t_cmd			*cmd;
 	u32				i;
 	int				r;
 
-	if (vm.mem.addr == 0)
+	if (cpu == NULL)
 		printf("%s:\n", file);
 	else
-		printf("%s (architecture %s):\n", file, vm.cpu);
-	offset = vm.mem.addr +
-		(vm.is_64 ? sizeof(t_mach_header_64) : sizeof(t_mach_header));
+		printf("%s (architecture %s):\n", file, cpu);
+	offset = vm.is_64 ? sizeof(t_mach_header_64) : sizeof(t_mach_header);
 	i = 0;
 	while (i++ < vm.ncmds)
 	{
@@ -177,26 +176,29 @@ int					disp_segments(t_vm vm, char *file)
 
 t_mem				get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu)
 {
+	u64				addr;
+	u64				size;
 	t_mem			out;
 	t_fat_arch		*fat_32;
 	t_fat_arch_64	*fat_64;
 
-	out.data = vm.mem.data;
 	if (vm.is_64)
 	{
 		fat_64 = (t_fat_arch_64*)ptr;
-		out.addr = vm.is_swap ? swap(fat_64->offset) : fat_64->offset;
-		out.size = vm.is_swap ? swap(fat_64->size) : fat_64->size;
+		addr = vm.is_swap ? swap(fat_64->offset) : fat_64->offset;
+		size = vm.is_swap ? swap(fat_64->size) : fat_64->size;
 		*cpu = fat_64->cputype;
 	}
 	else
 	{
 		fat_32 = (t_fat_arch*)ptr;
-		out.addr = vm.is_swap ? swap(fat_32->offset) : fat_32->offset;
-		out.size = vm.is_swap ? swap(fat_32->size) : fat_32->size;
+		addr = vm.is_swap ? swap(fat_32->offset) : fat_32->offset;
+		size = vm.is_swap ? swap(fat_32->size) : fat_32->size;
 		*cpu = fat_32->cputype;
 	}
-	out.size += out.addr;
+	out.offset = addr;
+	out.data = vm.mem.data + addr;
+	out.size = size;
 	return (out);
 }
 
@@ -217,14 +219,13 @@ int					disp_archs(t_vm vm, char *file)
 	while (i < vm.ncmds)
 	{
 		archmem = get_arch_map(vm, ptr, &fuck);
-		CHECK_LEN(archmem.size);
+		CHECK_LEN((archmem.data - vm.mem.data) + archmem.size);
 		archvm.ncmds = 0;
 		r = get_vm(&archvm, archmem);
-		vm.cpu = get_cpu(fuck, vm.is_swap);
 		if (r == 0 && archvm.is_fat)
 			r = 1000;
 		if (r == 0)
-			r = disp_segments(archvm, file);
+			r = disp_segments(archvm, file, get_cpu(fuck, vm.is_swap));
 		if (r)
 			return (r);
 		i++;
@@ -245,7 +246,7 @@ int				disp_file(t_mem mem, char *file)
 	if (vm.is_fat)
 		r = disp_archs(vm, file);
 	else
-		r = disp_segments(vm, file);
+		r = disp_segments(vm, file, NULL);
 	return r;
 }
 

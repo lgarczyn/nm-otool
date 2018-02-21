@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/16 02:07:15 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/21 05:34:25 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ t_mem				map(char *filename)
 	if (st.st_size == 0)
 		return (out);
 	out.data = mmap(0, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-	out.addr = 0;
 	out.size = st.st_size;
 	close(fd);
 	return (out);
@@ -79,9 +78,9 @@ int					get_vm(t_vm *out, t_mem mem)
 	t_vm			vm;
 
 	vm.mem = mem;
-	CHECK_LEN(sizeof(t_mach_header) + mem.addr);
-	mach_header = (t_mach_header*)(mem.data + mem.addr);
-	fat_header = (t_fat_header*)mach_header;
+	CHECK_LEN(sizeof(t_mach_header));
+	mach_header = (t_mach_header*)mem.data;
+	fat_header = (t_fat_header*)mem.data;
 	if (get_type(mach_header->magic, &vm.is_swap, &vm.is_64, &vm.is_fat))
 		return (3);
 	if (vm.is_fat)
