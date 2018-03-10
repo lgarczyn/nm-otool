@@ -6,7 +6,7 @@
 #    By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/05/06 14:07:52 by lgarczyn          #+#    #+#              #
-#    Updated: 2018/02/08 00:39:16 by lgarczyn         ###   ########.fr        #
+#    Updated: 2018/03/10 23:46:45 by lgarczyn         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ DEB = -g
 
 OPT = -O2
 
-FLAGS = -Wall -Wextra -Werror -funsigned-char $(OPT) $(DEB)
+FLAGS = -Wall -Wextra -Werror -funsigned-char -fno-signed-char $(OPT) $(DEB)
 
 INCLUDES = includes
 

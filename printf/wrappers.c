@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/08 16:31:30 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/12 22:57:56 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/02/21 06:20:06 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int					print(const char *restrict format, ...)
 	return (ft_flush_buf());
 }
 
-int					printf(const char *restrict format, ...)
+int					printff(const char *restrict format, ...)
 {
 	va_list			ap;
 

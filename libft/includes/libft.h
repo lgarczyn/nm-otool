@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/07 16:18:53 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/09 00:44:20 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/10 23:47:42 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,13 @@
 # define U16 typedef uint16_t u16;
 # define U32 typedef uint32_t u32;
 # define U64 typedef uint64_t u64;
+# define USIZE typedef size_t usize;
 # define I8 typedef int8_t i8;
 # define I16 typedef int16_t i16;
 # define I32 typedef int32_t i32;
-# define I64 typedef int64_t i64;
-# define ILLEGAL {}; U8 U16 U32 U64 I8 I16 I32 I64
+# define I64 typedef uint64_t u64;
+# define ISIZE typedef ssize_t isize;
+# define ILLEGAL {}; U8 U16 U32 U64 USIZE I8 I16 I32 I64 ISIZE
 
 static int g_a[0] = ILLEGAL;
 
@@ -87,6 +89,7 @@ char				*ft_strcat(char *s1, const char *s2);
 char				*ft_strchr(const char *s, int c);
 char				*ft_strcpy(char *dst, const char *src);
 char				*ft_strdup(const char *s1);
+char				*ft_strndup(const char *s1, int len);
 char				*ft_strjoin(char const *s1, char const *s2);
 char				*ft_strmap(char const *s, char (*f)(char));
 char				*ft_strmapi(char const *s, char (*f)(unsigned int, char));
@@ -99,6 +102,7 @@ char				*ft_strstr(const char *s1, const char *s2);
 char				*ft_strsub(char const *s, unsigned int start, size_t len);
 char				*ft_strtrim(char const *s);
 int					ft_atoi(const char *str);
+int					ft_pure_atoi(const char *str);
 int					ft_intlen(int num);
 int					ft_isalnum(int c);
 int					ft_isalpha(int c);

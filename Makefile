@@ -18,13 +18,13 @@ INC = -Ilibft/includes -Iprintf
 		
 OBJ = $(SRC:.c=.o)
 
-LIB = -L libft/ -lft #-L printf -lftprintf
+LIB = -L libft/ -lft -L printf -lftprintf
 
 DEB = 
 
 OPT = -O2
 
-FLG = -Wall -Wextra -Werror -funsigned-char  -m64 $(OPT) $(DEB)
+FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT) $(DEB)
 
 all: $(NAME)
 

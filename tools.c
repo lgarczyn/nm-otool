@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/21 05:34:25 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/11 00:35:23 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,17 +35,22 @@ t_mem				map(char *filename)
 	return (out);
 }
 
-int					get_type(u32 m, bool *is_swap, bool *is_64, bool *is_fat)
+t_ftype				get_type(void *p, bool *is_swap, bool *is_64)
 {
+	u32				m;
+
+	m = *(u32*)p;
 	*is_swap = (m == FAT_CIGAM || m == FAT_CIGAM_64 ||
 		m == MH_CIGAM || m == MH_CIGAM_64);
-	if (*is_swap)
-		m = swap(m);
+	m = s(m, *is_swap);
 	*is_64 = (m == FAT_MAGIC_64 || m == MH_MAGIC_64);
-	*is_fat = (m == FAT_MAGIC || m == FAT_MAGIC_64);
-	if (m == MH_MAGIC || m == MH_MAGIC_64 || *is_fat)
-		return (0);
-	return (1);
+	if (m == FAT_MAGIC || m == FAT_MAGIC_64)
+		return (f_fat);
+	if (m == MH_MAGIC || m == MH_MAGIC_64)
+		return (f_object);
+	if (ft_strncmp("!<arch>\n", (char*)p, 8) == 0)
+		return (f_ranlib);
+	return (f_err);
 }
 
 const char			*get_cpu(cpu_type_t cpu, bool is_swap)
@@ -56,8 +61,7 @@ const char			*get_cpu(cpu_type_t cpu, bool is_swap)
 		"i860", "i860_little", "rs6000", "ppc"
 	};
 
-	if (is_swap)
-		cpu = swap(cpu);
+	cpu = s(cpu, is_swap);
 	if (cpu == CPU_TYPE_ANY)
 		return ("any");
 	if (cpu == CPU_TYPE_X86_64)
@@ -71,6 +75,28 @@ const char			*get_cpu(cpu_type_t cpu, bool is_swap)
 	return ("unknown");
 }
 
+int					fill_ranlib_vm(t_vm *out)
+{
+	u64				offset;
+
+	offset = 60;
+	print("name %s\n", ft_strndup((char*)out->mem.data + 8, 16));
+	print("date %s\n", ft_strndup((char*)out->mem.data + 24, 12));
+	print("uid %s\n", ft_strndup((char*)out->mem.data + 32, 6));
+	print("gid %s\n", ft_strndup((char*)out->mem.data + 40, 6));
+	print("mode %s\n", ft_strndup((char*)out->mem.data + 48, 8));
+	print("size %s\n", ft_strndup((char*)out->mem.data + 56, 8));
+	if (out->mem.data[8] == '#' && out->mem.data[9] == '/')
+	{
+		offset += ft_pure_atoi((char*)out->mem.data + 10);
+		print("real name: %s\n", ft_strndup((char*)out->mem.data + 60, offset - 60));
+	}
+	if (out->mem.data[58] != '`' || out->mem.data[59] != '\n')
+		return (101);
+	exit (0);
+	return 0;
+}
+
 int					get_vm(t_vm *out, t_mem mem)
 {
 	t_mach_header	*mach_header;
@@ -81,22 +107,24 @@ int					get_vm(t_vm *out, t_mem mem)
 	CHECK_LEN(sizeof(t_mach_header));
 	mach_header = (t_mach_header*)mem.data;
 	fat_header = (t_fat_header*)mem.data;
-	if (get_type(mach_header->magic, &vm.is_swap, &vm.is_64, &vm.is_fat))
-		return (3);
-	if (vm.is_fat)
+	vm.type = get_type(mem.data, &vm.is_swap, &vm.is_64);
+	if (vm.type == f_ranlib)
+		fill_ranlib_vm(&vm);
+	else if (vm.type == f_fat)
 	{
 		vm.ncmds = fat_header->nfat_arch;
 		vm.cpu = NULL;
 	}
-	else
+	else if (vm.type == f_object)
 	{
 		vm.cpu = get_cpu(mach_header->cputype, vm.is_swap);
 		vm.ncmds = mach_header->ncmds;
 	}
-	if (vm.is_swap)
-		vm.ncmds = swap(vm.ncmds);
+	else
+		return (3);
+	vm.ncmds = s(vm.ncmds, vm.is_swap);
 	*out = vm;
-	//printf("GOT VM cpu:%x swap:%i 64:%i fat:%i\n", s(mach_header->cputype, vm.is_swap), vm.is_swap, vm.is_64, vm.is_fat);
+	//print("GOT VM cpu:%x swap:%i 64:%i type:%i\n", s(mach_header->cputype, vm.is_swap), vm.is_swap, vm.is_64, vm.type);
 	return (0);
 }
 
@@ -108,17 +136,17 @@ void				putdata(t_vm vm, u8 *data, size_t size, size_t addr)
 	while (i < size)
 	{
 		if (i % 16 == 0 && vm.is_64)
-			printf("%016lx\t", addr + i);
+			print("%016lx\t", addr + i);
 		else if (i % 16 == 0)
-			printf("%08lx\t", addr + i);
+			print("%08lx\t", addr + i);
 		if (vm.is_swap && i % 4 != 3)
-			printf("%02x", data[i]);
+			print("%02x", data[i]);
 		else
-			printf("%02x ", data[i]);
+			print("%02x ", data[i]);
 		if (i % 16 == 15)
-			printf("\n");
+			print("\n");
 		i++;
 	}
 	if (i % 16 != 0)
-		printf("\n");
+		print("\n");
 }
