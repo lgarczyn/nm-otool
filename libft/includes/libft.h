@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/07 16:18:53 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/10 23:47:42 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/13 01:13:46 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ char				*ft_strstr(const char *s1, const char *s2);
 char				*ft_strsub(char const *s, unsigned int start, size_t len);
 char				*ft_strtrim(char const *s);
 int					ft_atoi(const char *str);
-int					ft_pure_atoi(const char *str);
+unsigned int		ft_pure_atoi(const char *str);
 int					ft_intlen(int num);
 int					ft_isalnum(int c);
 int					ft_isalpha(int c);

@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:15 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/10 23:59:54 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/13 02:16:04 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ int					disp_segment(t_vm vm, t_cmd *c, u64 offset)
 	int				r;
 	t_seg_cmd_64	seg;
 
-	if (c->load.cmd == LC_SEGMENT_64 || c->load.cmd == LC_SEGMENT)
+	if (c->cmd == LC_SEGMENT_64 || c->cmd == LC_SEGMENT)
 	{
 		CHECK_LEN(offset + sizeof(c->name));
 		if (ft_strncmp(c->name.segname, SEG_TEXT, sizeof(SEG_TEXT)) == 0)
@@ -63,7 +63,7 @@ int					disp_segment(t_vm vm, t_cmd *c, u64 offset)
 	return (0);
 }
 
-int					disp_segments(t_vm vm, char *file, const char *cpu)
+int					disp_object(t_vm vm, char *file, const char *cpu)
 {
 	u64				offset;
 	t_cmd			*cmd;
@@ -111,13 +111,12 @@ t_mem				get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu)
 		size = s(vm.is_swap, fat_32->size);
 		*cpu = fat_32->cputype;
 	}
-	out.offset = addr;
 	out.data = vm.mem.data + addr;
 	out.size = size;
 	return (out);
 }
 
-int					disp_archs(t_vm vm, char *file)
+int					disp_fat(t_vm vm, char *file)
 {
 	int				r;
 	u32				i;
@@ -140,7 +139,7 @@ int					disp_archs(t_vm vm, char *file)
 		if (r == 0 && archvm.type == f_fat)
 			r = 1000;
 		if (r == 0)
-			r = disp_segments(archvm, file, get_cpu(fuck, vm.is_swap));
+			r = disp_object(archvm, file, get_cpu(fuck, vm.is_swap));
 		if (r)
 			return (r);
 		i++;
@@ -149,7 +148,31 @@ int					disp_archs(t_vm vm, char *file)
 	return (0);
 }
 
-int				disp_file(t_mem mem, char *file)
+int					disp_ranlib(t_vm vm, char *file)
+{
+	u64				offset;
+	u32				real_ncmds;
+	t_symdef		*s;
+	u32				i;
+
+	offset = 8 + vm.ncmds;
+	real_ncmds = *(u32*)(vm.mem.data + offset);
+	offset += sizeof(u32);
+	s = *(t_symdef*)(vm.mem.data + offset);
+	i = 0;
+	CHECK_LEN(offset + real_ncmds * sizeof(t_symdef));
+	while (i < real_ncmds)
+	{
+		u32 o = s[i].ran_off;
+		ft_putnstr_buf(vm.mem.data + s[i].ran_off, 10);
+
+		i++;
+	}
+	ft_flush_buf();
+	return (0);
+}
+
+int					disp_file(t_mem mem, char *file)
 {
 	int				r;
 	t_vm			vm;
@@ -159,10 +182,12 @@ int				disp_file(t_mem mem, char *file)
 	if (r)
 		return (r);
 	if (vm.type == f_fat)
-		r = disp_archs(vm, file);
+		r = disp_fat(vm, file);
+	else if (vm.type == f_ranlib)
+		r = disp_ranlib(vm, file);
 	else
-		r = disp_segments(vm, file, NULL);
-	return r;
+		r = disp_object(vm, file, NULL);
+	return (r);
 }
 
 int					main(int argc, char **argv)

@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/10 23:59:00 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/13 02:15:06 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 
 # include <mach-o/loader.h>
 # include <mach-o/fat.h>
+# define __LP64__
+# include <mach-o/ranlib.h>
 
 # include <libft.h>
 # include <public.h>
@@ -71,7 +73,10 @@ typedef struct fat_header					t_fat_header;
 typedef struct fat_arch						t_fat_arch;
 typedef struct fat_arch_64					t_fat_arch_64;
 
+typedef struct symdef						t_symdef;
+
 typedef union				u_cmd {
+	u32						cmd;
 	t_load_command			load;
 	t_seg_cmd_32			name;
 	t_seg_cmd_32			seg32;
@@ -80,9 +85,22 @@ typedef union				u_cmd {
 	t_dylib_command			dylib;
 }							t_cmd;
 
+# define AR_START			"!<arch>\n"
+# define AR_END				"  `\n"
+
+typedef struct				s_ar_header {
+	char					name[16];
+	char					date[12];
+	char					uid[6];
+	char					gid[6];
+	char					mode[8];
+	char					size[8];
+	char					end[4];
+	char					long_name[0];
+}							t_ar_header;
+
 typedef struct				s_mem {
 	u8						*data;
-	u64						offset;
 	u64						size;
 }							t_mem;
 
@@ -117,8 +135,8 @@ t_seg_cmd_64				read_segment(void *p, bool is_swap, bool is_64);
 t_section_64				read_section(void *p, bool is_swap, bool is_64);
 
 # define BREAK(A) do { return(1000000 + 1000 * __LINE__ + A); } while (0)
-# define PRINT(l) do { printf("%llu > %llu %s:%i\n", (u64)l, vm.mem.size, __FILE__, __LINE__);}
+# define PRINT(l) do { printf("%llu > %llu %s:%i\n", (u64)l, vm.mem.size, __FILE__, __LINE__);} while(0)
 
-# define CHECK_LEN(l) do { if (l > vm.mem.size) { BREAK(__COUNTER__); }} while (0)
+# define CHECK_LEN(l) do { if (l > vm.mem.size) { PRINT(l); BREAK(__COUNTER__); }} while (0)
 
 #endif

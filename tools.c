@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/11 00:35:23 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/13 02:13:17 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,26 +75,32 @@ const char			*get_cpu(cpu_type_t cpu, bool is_swap)
 	return ("unknown");
 }
 
-int					fill_ranlib_vm(t_vm *out)
+int					check_ranlib_header(t_vm vm, u64 pos, u64 *out)
 {
 	u64				offset;
+	t_ar_header		*head;
 
-	offset = 60;
-	print("name %s\n", ft_strndup((char*)out->mem.data + 8, 16));
-	print("date %s\n", ft_strndup((char*)out->mem.data + 24, 12));
-	print("uid %s\n", ft_strndup((char*)out->mem.data + 32, 6));
-	print("gid %s\n", ft_strndup((char*)out->mem.data + 40, 6));
-	print("mode %s\n", ft_strndup((char*)out->mem.data + 48, 8));
-	print("size %s\n", ft_strndup((char*)out->mem.data + 56, 8));
-	if (out->mem.data[8] == '#' && out->mem.data[9] == '/')
+	CHECK_LEN(pos + sizeof(t_ar_header));
+	head = (t_ar_header*)(vm.mem.data + pos);
+	print("name %s\n", ft_strndup(head->name, sizeof(head->name)));
+	print("date %s\n", ft_strndup(head->date, sizeof(head->date)));
+	print("uid %s\n", ft_strndup(head->uid, sizeof(head->uid)));
+	print("gid %s\n", ft_strndup(head->gid, sizeof(head->gid)));
+	print("mode %s\n", ft_strndup(head->mode, sizeof(head->mode)));
+	print("size %s\n", ft_strndup(head->size, sizeof(head->size)));
+	offset = 0;
+	if (ft_strncmp("#1/", head->name, 3) == 0)
 	{
-		offset += ft_pure_atoi((char*)out->mem.data + 10);
-		print("real name: %s\n", ft_strndup((char*)out->mem.data + 60, offset - 60));
+		offset = ft_pure_atoi(head->name + 3);
+		if (offset > 256)
+			return (1);
+		CHECK_LEN(pos + sizeof(t_ar_header) + offset);
+		print("real name: %s\n", ft_strndup(head->long_name, offset));
 	}
-	if (out->mem.data[58] != '`' || out->mem.data[59] != '\n')
-		return (101);
-	exit (0);
-	return 0;
+	if (ft_strncmp("  `\n", head->end, 4) != 0)
+		return (1);
+	*out = sizeof(t_ar_header) + offset;
+	return (0);
 }
 
 int					get_vm(t_vm *out, t_mem mem)
@@ -102,29 +108,28 @@ int					get_vm(t_vm *out, t_mem mem)
 	t_mach_header	*mach_header;
 	t_fat_header	*fat_header;
 	t_vm			vm;
+	u64				offset;
 
 	vm.mem = mem;
 	CHECK_LEN(sizeof(t_mach_header));
 	mach_header = (t_mach_header*)mem.data;
 	fat_header = (t_fat_header*)mem.data;
 	vm.type = get_type(mem.data, &vm.is_swap, &vm.is_64);
-	if (vm.type == f_ranlib)
-		fill_ranlib_vm(&vm);
+	if (vm.type == f_ranlib && check_ranlib_header(vm, 8, &offset))
+		vm.ncmds = offset;
 	else if (vm.type == f_fat)
-	{
 		vm.ncmds = fat_header->nfat_arch;
-		vm.cpu = NULL;
-	}
 	else if (vm.type == f_object)
-	{
-		vm.cpu = get_cpu(mach_header->cputype, vm.is_swap);
 		vm.ncmds = mach_header->ncmds;
-	}
 	else
 		return (3);
+	if (vm.type == f_object)
+		vm.cpu = get_cpu(mach_header->cputype, vm.is_swap);
+	else
+		vm.cpu = NULL;
 	vm.ncmds = s(vm.ncmds, vm.is_swap);
 	*out = vm;
-	//print("GOT VM cpu:%x swap:%i 64:%i type:%i\n", s(mach_header->cputype, vm.is_swap), vm.is_swap, vm.is_64, vm.type);
+	print("GOT VM cpu:%x swap:%i 64:%i type:%i\n", s(mach_header->cputype, vm.is_swap), vm.is_swap, vm.is_64, vm.type);
 	return (0);
 }
 

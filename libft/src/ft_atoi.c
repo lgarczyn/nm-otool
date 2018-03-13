@@ -6,13 +6,13 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/04 05:11:02 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/10 23:54:31 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/13 01:09:21 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int			ft_pure_atoi(const char *str)
+u32			ft_pure_atoi(const char *str)
 {
 	int		value;
 	int		i;
@@ -26,7 +26,7 @@ int			ft_pure_atoi(const char *str)
 
 int			ft_atoi(const char *str)
 {
-	int		value;
+	u32		value;
 	int		sign;
 	int		i;
 
