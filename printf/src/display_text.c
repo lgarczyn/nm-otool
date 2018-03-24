@@ -6,15 +6,15 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/10 13:14:41 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/23 20:59:07 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/23 21:02:06 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <unistd.h>
-#include "printf.h"
+#include "private.h"
 #include <stdarg.h>
 
-static char			getc(t_info info)
+static char			get_padding(t_info info)
 {
 	return (info.modifiers & m_zero_padded ? '0' : ' ');
 }
@@ -22,7 +22,7 @@ static char			getc(t_info info)
 void				putchar_padded(int c, t_info info)
 {
 	if (!(info.modifiers & m_left_justified))
-		ft_putnchar_buf(getc(info), info.min_width - 1);
+		ft_putnchar_buf(get_padding(info), info.min_width - 1);
 	if (info.input_len == l_l)
 		ft_putwchar_buf(c);
 	else
@@ -60,7 +60,7 @@ void				display_str(va_list arg, t_info info)
 	if (info.precision >= 0)
 		len = MIN(len, info.precision);
 	if (!(info.modifiers & m_left_justified))
-		ft_putnchar_buf(getc(info), info.min_width - len);
+		ft_putnchar_buf(get_padding(info), info.min_width - len);
 	if (info.input_len == l_l)
 		ft_putnwstr_buf(str, len);
 	else

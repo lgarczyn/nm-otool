@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/13 02:15:06 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/24 01:06:42 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,9 @@
 
 # include <mach-o/loader.h>
 # include <mach-o/fat.h>
-# define __LP64__
-# include <mach-o/ranlib.h>
 
-# include <libft.h>
-# include <public.h>
+# include "libft.h"
+# include "printf.h"
 
 typedef struct mach_header					t_mach_header;
 typedef struct mach_header_64				t_mach_header_64;
@@ -73,7 +71,10 @@ typedef struct fat_header					t_fat_header;
 typedef struct fat_arch						t_fat_arch;
 typedef struct fat_arch_64					t_fat_arch_64;
 
-typedef struct symdef						t_symdef;
+typedef struct				s_symdef {
+	u32						name;
+	u32						object;
+}							t_symdef;
 
 typedef union				u_cmd {
 	u32						cmd;
@@ -104,6 +105,14 @@ typedef struct				s_mem {
 	u64						size;
 }							t_mem;
 
+struct s_vm;
+
+typedef struct				s_target {
+	char					*segment;
+	char					*section;
+	void					(*display)(struct s_vm *vm, u8 *data, size_t size, size_t addr);
+}							t_target;
+
 typedef enum				e_ftype {
 	f_err,
 	f_object,
@@ -118,13 +127,15 @@ typedef struct				s_vm {
 	t_ftype					type;
 	bool					is_swap;
 	bool					is_64;
+	t_target				target;
 }							t_vm;
 
 t_mem						map(char *filename);
 int							get_vm(t_vm *f, t_mem mem);
 const char					*get_cpu(cpu_type_t cpu, bool is_swap);
+int							check_ranlib_header(t_vm vm, u64 pos, u64 *out);
 
-void						putdata(t_vm vm, u8 *d, size_t size, size_t addr);
+void						putdata(t_vm *vm, u8 *data, size_t size, size_t addr);
 
 u32							s(u32 x, bool is_swap);
 u64							sl(u64 x, bool is_swap);
@@ -134,9 +145,14 @@ void						swap_load(t_load_command *cmd, bool is_swap);
 t_seg_cmd_64				read_segment(void *p, bool is_swap, bool is_64);
 t_section_64				read_section(void *p, bool is_swap, bool is_64);
 
-# define BREAK(A) do { return(1000000 + 1000 * __LINE__ + A); } while (0)
-# define PRINT(l) do { printf("%llu > %llu %s:%i\n", (u64)l, vm.mem.size, __FILE__, __LINE__);} while(0)
 
-# define CHECK_LEN(l) do { if (l > vm.mem.size) { PRINT(l); BREAK(__COUNTER__); }} while (0)
+# define BREAK do { return(1000000 + __LINE__); } while (0)
+# define PRINT_L(l) do { printerr("%llu > %llu %s:%i\n", (u64)l, vm.mem.size, __FILE__, __LINE__);} while(0)
+# define PRINT_R(r) do { printerr("%llu != 0 %s:%i\n", (u64)r, __FILE__, __LINE__);} while(0)
+
+# define CHECK_LEN(l) do { if (l > vm.mem.size) { PRINT_L(l); BREAK; }} while (0)
+# define GET_CHECKED_PTR(o, l) ({CHECK_LEN(o+l); vm.mem.data+o;})
+# define GET_CHECKED_VAL(o, t) *(t*)({CHECK_LEN(o+sizeof(t)); vm.mem.data+o;})
+# define CHECK(t) do {int r = t; if (r) {PRINT_R(r); return(r);}} while (0)
 
 #endif

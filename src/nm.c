@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:15 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/13 02:16:04 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/24 02:18:50 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,27 @@
 
 int					disp_sections(t_vm vm, u64 offset, u64 n, u64 vmaddr)
 {
-	t_section_32	*sections_32;
-	t_section_64	*sections_64;
+	t_section_64	sec;
 	u64				i;
-	char			*sec_name;
-	u64				sec_size;
+	u64				addr;
 
+	print("print_sections\n");
 	i = 0;
 	CHECK_LEN(offset +
 		n * (vm.is_64 ? sizeof(t_section_64) : sizeof(t_section_32)));
-	sections_64 = (t_section_64*)(vm.mem.data + offset);
-	sections_32 = (t_section_32*)(vm.mem.data + offset);
 	while (i < n)
 	{
-		sec_name = vm.is_64 ? sections_64[i].sectname : sections_32[i].sectname;
-		offset = vm.is_64 ? sl(sections_64[i].addr, vm.is_swap) : s(sections_32[i].addr, vm.is_swap);
-		sec_size = vm.is_64 ? sl(sections_64[i].size, vm.is_swap) : s(sections_32[i].size, vm.is_swap);
-		if (strncmp(sec_name, SECT_TEXT, sizeof(SECT_TEXT)) == 0)
+		sec = read_section(&vm.mem.data[offset], vm.is_swap, vm.is_64);
+		if (ft_strncmp(sec.sectname, vm.target.section, ft_strlen(vm.target.section)) == 0 &&
+			ft_strncmp(sec.segname, vm.target.segment, ft_strlen(vm.target.segment) == 0))
 		{
-			print("Contents of (__TEXT,__text) section\n");
-			CHECK_LEN(offset - vmaddr + sec_size);
-			(void)vmaddr;
-			putdata(vm, &vm.mem.data[offset - vmaddr], sec_size, offset);
+			print("Contents of (%s,%s) section\n",
+				vm.target.segment, vm.target.section);
+			addr = sec.offset - vmaddr;
+			CHECK_LEN(addr + sec.size);
+			vm.target.display(&vm, &vm.mem.data[addr], sec.size, offset);
 		}
+		offset += vm.is_64 ? sizeof(t_section_64) : sizeof(t_section_32);
 		i++;
 	}
 	return (0);
@@ -44,21 +42,15 @@ int					disp_sections(t_vm vm, u64 offset, u64 n, u64 vmaddr)
 
 int					disp_segment(t_vm vm, t_cmd *c, u64 offset)
 {
-	int				r;
 	t_seg_cmd_64	seg;
 
+	CHECK_LEN(offset + sizeof(c->cmd));
 	if (c->cmd == LC_SEGMENT_64 || c->cmd == LC_SEGMENT)
 	{
-		CHECK_LEN(offset + sizeof(c->name));
-		if (ft_strncmp(c->name.segname, SEG_TEXT, sizeof(SEG_TEXT)) == 0)
-		{
-			offset += vm.is_64 ? sizeof(c->seg64) : sizeof(c->seg32);
-			CHECK_LEN(offset);
-			seg = read_segment(c, vm.is_swap, vm.is_64);
-			r = disp_sections(vm, offset, seg.nsects, seg.vmaddr);
-			if (r)
-				return (r);
-		}
+		offset += vm.is_64 ? sizeof(c->seg64) : sizeof(c->seg32);
+		CHECK_LEN(offset);
+		seg = read_segment(c, vm.is_swap, vm.is_64);
+		CHECK(disp_sections(vm, offset, seg.nsects, seg.vmaddr));
 	}
 	return (0);
 }
@@ -68,8 +60,8 @@ int					disp_object(t_vm vm, char *file, const char *cpu)
 	u64				offset;
 	t_cmd			*cmd;
 	u32				i;
-	int				r;
 
+	print("DISP_OBJECT\n");
 	if (cpu == NULL)
 		print("%s:\n", file);
 	else
@@ -81,9 +73,7 @@ int					disp_object(t_vm vm, char *file, const char *cpu)
 		CHECK_LEN(offset + sizeof(t_load_command));
 		cmd = (t_cmd*)(vm.mem.data + offset);
 		swap_load(&cmd->load, vm.is_swap);
-		r = disp_segment(vm, cmd, offset);
-		if (r)
-			return (r);
+		CHECK(disp_segment(vm, cmd, offset));
 		offset += cmd->load.cmdsize;
 	}
 	return (0);
@@ -118,7 +108,6 @@ t_mem				get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu)
 
 int					disp_fat(t_vm vm, char *file)
 {
-	int				r;
 	u32				i;
 	t_vm			archvm;
 	t_mem			archmem;
@@ -135,18 +124,16 @@ int					disp_fat(t_vm vm, char *file)
 		archmem = get_arch_map(vm, ptr, &fuck);
 		CHECK_LEN((archmem.data - vm.mem.data) + archmem.size);
 		archvm.ncmds = 0;
-		r = get_vm(&archvm, archmem);
-		if (r == 0 && archvm.type == f_fat)
-			r = 1000;
-		if (r == 0)
-			r = disp_object(archvm, file, get_cpu(fuck, vm.is_swap));
-		if (r)
-			return (r);
+		CHECK(get_vm(&archvm, archmem));
+		CHECK(archvm.type == f_fat);
+		CHECK(disp_object(archvm, file, get_cpu(fuck, vm.is_swap)));
 		i++;
 		ptr += vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch);
 	}
 	return (0);
 }
+
+int					disp_file(t_mem mem, char *file);
 
 int					disp_ranlib(t_vm vm, char *file)
 {
@@ -154,46 +141,54 @@ int					disp_ranlib(t_vm vm, char *file)
 	u32				real_ncmds;
 	t_symdef		*s;
 	u32				i;
+	u64				name_len;
+	char			*name;
 
 	offset = 8 + vm.ncmds;
-	real_ncmds = *(u32*)(vm.mem.data + offset);
+	real_ncmds = GET_CHECKED_VAL(offset, u32) / 8;
 	offset += sizeof(u32);
-	s = *(t_symdef*)(vm.mem.data + offset);
+	s = (t_symdef*)GET_CHECKED_PTR(offset, real_ncmds * sizeof(t_symdef));
+	offset += real_ncmds * sizeof(t_symdef);
+	name_len = GET_CHECKED_VAL(offset, u32);
+	CHECK(GET_CHECKED_VAL(offset + name_len, u32) != 0);
+	offset += sizeof(u32);
 	i = 0;
-	CHECK_LEN(offset + real_ncmds * sizeof(t_symdef));
 	while (i < real_ncmds)
 	{
-		u32 o = s[i].ran_off;
-		ft_putnstr_buf(vm.mem.data + s[i].ran_off, 10);
+		name = (char*)GET_CHECKED_PTR(offset + s[i].name, name_len);
+		ft_putmstr_buf(name, name_len - s[i].name);
+		print(":\n");
 
+		u64 len;
+		CHECK(check_ranlib_header(vm, s[i].object, &len));
+		CHECK(disp_file((t_mem){vm.mem.data + s[i].object + len, vm.mem.size - s[i].object}, name));
 		i++;
+		(void)file;
 	}
-	ft_flush_buf();
 	return (0);
 }
 
 int					disp_file(t_mem mem, char *file)
 {
-	int				r;
 	t_vm			vm;
 
-	r = 0;
-	r = get_vm(&vm, mem);
-	if (r)
-		return (r);
+	print("DISPLAYING FILE %p OF LEN %llu\n", mem.data, mem.size);
+	CHECK(get_vm(&vm, mem));
+	vm.target.segment = SEG_TEXT;
+	vm.target.section = SECT_TEXT;
+	vm.target.display = &putdata;
 	if (vm.type == f_fat)
-		r = disp_fat(vm, file);
+		CHECK(disp_fat(vm, file));
 	else if (vm.type == f_ranlib)
-		r = disp_ranlib(vm, file);
+		CHECK(disp_ranlib(vm, file));
 	else
-		r = disp_object(vm, file, NULL);
-	return (r);
+		CHECK(disp_object(vm, file, NULL));
+	return (0);
 }
 
 int					main(int argc, char **argv)
 {
 	int				i;
-	int				r;
 	t_mem			mem;
 
 	ft_buf(malloc(4096), 4096, 1);
@@ -211,9 +206,7 @@ int					main(int argc, char **argv)
 			ft_perror_file_buf(argv[0], argv[i]);
 			return (errno);
 		}
-		r = disp_file(mem, argv[i]);
-		if (r)
-			print("fuck %s: %i\n", argv[i], r);
+		CHECK(disp_file(mem, argv[i]));
 		munmap(mem.data, mem.size);
 	}
 	ft_flush_buf();

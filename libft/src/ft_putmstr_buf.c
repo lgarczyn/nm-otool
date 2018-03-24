@@ -1,37 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_putnbr_buf.c                                    :+:      :+:    :+:   */
+/*   ft_putmstr_buf.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2015/05/08 21:33:25 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/23 21:57:42 by lgarczyn         ###   ########.fr       */
+/*   Created: 2015/05/08 21:32:17 by lgarczyn          #+#    #+#             */
+/*   Updated: 2018/03/18 20:03:34 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void				ft_putnbr_buf(int n)
+void				ft_putmstr_buf(const char *str, size_t len)
 {
-	static char	buffer[11];
-	int			i;
-	int			isneg;
-	int			len;
+	size_t			i;
 
-	len = ft_intlen(n);
-	i = len - 1;
-	isneg = n < 0;
-	if (isneg)
-	{
-		buffer[0] = '-';
-		buffer[i--] = '0' - (n % 10);
-		n = -(n / 10);
-	}
-	while (i >= isneg)
-	{
-		buffer[i--] = '0' + (n % 10);
-		n /= 10;
-	}
-	ft_putnstr_buf(buffer, len);
+	i = 0;
+	while (i < len && str[i])
+		ft_putchar_buf(str[i++]);
 }

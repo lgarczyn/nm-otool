@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/07 16:18:53 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/13 01:13:46 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/18 20:02:08 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ void				ft_putnendl_buf(const char *str, size_t n);
 void				ft_putnbr_buf(int n);
 void				ft_putspace_buf(size_t len);
 void				ft_putnstr_buf(const char *str, size_t len);
+void				ft_putmstr_buf(const char *str, size_t len);
 void				ft_putstr_buf(const char *str);
 void				ft_putnwstr_buf(wchar_t *str, size_t len);
 void				ft_putwstr_buf(wchar_t *str);

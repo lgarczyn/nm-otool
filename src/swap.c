@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 00:14:29 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/11 00:02:23 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/24 01:49:58 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,30 @@ t_seg_cmd_64		read_segment(void *p, bool swap, bool is64)
 	out.filesize = is64 ? sl(p64->filesize, swap) : s(p32->filesize, swap);
 	out.nsects = s(is64 ? p64->nsects : p32->nsects, swap);
 	out.flags = s(is64 ? p64->flags : p32->flags, swap);
+
+	print("\
+uint32_t	cmd			%u\n\
+uint32_t	cmdsize		%u\n\
+char		segname		%s\n\
+uint64_t	vmaddr		%llu\n\
+uint64_t	vmsize		%llu\n\
+uint64_t	fileoff		%llu\n\
+uint64_t	filesize	%llu\n\
+vm_prot_t	maxprot		%X\n\
+vm_prot_t	initprot	%X\n\
+uint32_t	nsects		%u\n\
+uint32_t	flags		%u\n",
+	out.cmd,
+	out.cmdsize,
+	out.segname,
+	out.vmaddr,
+	out.vmsize,
+	out.fileoff,
+	out.filesize,
+	out.maxprot,
+	out.initprot,
+	out.nsects,
+	out.flags);
 	return (out);
 }
 
@@ -69,6 +93,7 @@ t_section_64		read_section(void *p, bool swap, bool is64)
 
 	p64 = (t_section_64*)p;
 	p32 = (t_section_32*)p;
+	
 	ft_memmove(out.sectname, &p64->sectname, sizeof(out.sectname));
 	ft_memmove(out.segname, &p64->segname, sizeof(out.segname));
 	out.addr = is64 ? sl(p64->addr, swap) : s(p32->addr, swap);
@@ -78,5 +103,17 @@ t_section_64		read_section(void *p, bool swap, bool is64)
 	out.reloff = s(is64 ? p64->reloff : p32->reloff, swap);
 	out.nreloc = s(is64 ? p64->nreloc : p32->nreloc, swap);
 	out.flags = s(is64 ? p64->flags : p32->flags, swap);
+
+	print("sectname 	%s\n", out.sectname);
+	print("segname 	%s\n", out.segname);
+	print("addr 	%llu\n", out.addr);
+	print("size 	%llu\n", out.size);
+	print("offset 	%u\n", out.offset);
+	print("align 	%u\n", out.align);
+	print("reloff 	%u\n", out.reloff);
+	print("nreloc 	%u\n", out.nreloc);
+	print("flags 	%u\n", out.flags);
+	print("reserved 	%u\n", out.reserved1);
+	print("reserved 	%u\n", out.reserved2);
 	return (out);
 }

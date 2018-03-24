@@ -6,11 +6,11 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/10 06:57:48 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/25 20:40:22 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/23 20:49:17 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "printf.h"
+#include "private.h"
 #include <stdarg.h>
 
 static void			display_final(char *header, char *number, t_info info)

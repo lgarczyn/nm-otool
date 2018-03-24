@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/04 05:11:02 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/13 01:09:21 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/23 21:57:28 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ u32			ft_pure_atoi(const char *str)
 	value = 0;
 	while (ft_isdigit(str[i]) && i <= 10)
 		value = value * 10 + str[i++] - '0';
-	return value;
+	return (value);
 }
 
 int			ft_atoi(const char *str)

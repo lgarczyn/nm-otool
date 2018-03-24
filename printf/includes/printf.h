@@ -1,22 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   public.h                                           :+:      :+:    :+:   */
+/*   printf.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/08 16:31:19 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/21 06:20:14 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/23 20:42:00 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PUBLIC_H
-# define PUBLIC_H
+#ifndef PRINTF_H
+# define PRINTF_H
 
-int						printerr(const char *restrict format, ...);
-int						printfd(int fd, const char *restrict format, ...);
-int						printff(const char *restrict format, ...);
-int						printf(const char *restrict format, ...);
 int						print(const char *restrict format, ...);
+int						printerr(const char *restrict format, ...);
+int						printind(const char *restrict format, ...);
+int						printfd(int fd, const char *restrict format, ...);
 
 #endif

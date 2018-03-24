@@ -6,11 +6,11 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/08 16:31:30 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/02/12 22:59:08 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/23 20:49:24 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "printf.h"
+#include "private.h"
 
 static bool			read_arg(const char **format, char arg)
 {

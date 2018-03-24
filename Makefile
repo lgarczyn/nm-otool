@@ -14,11 +14,11 @@ NAME = nm_otool
 
 SRC = tools.c swap.c
 
-INC = -Ilibft/includes -Iprintf
+INC = -Ilibft/includes -Iprintf/includes
 		
-OBJ = $(SRC:.c=.o)
+OBJ = $(addprefix obj/, $(addsuffix .o, $(basename $(SRC))))
 
-LIB = -L libft/ -lft -L printf -lftprintf
+LIB = -L libft -lft -L printf -lftprintf
 
 DEB = 
 
@@ -31,13 +31,13 @@ all: $(NAME)
 $(NAME):$(OBJ)
 	cd libft && make
 	cd printf && make
-	gcc -o ft_nm nm.c $(OBJ) $(INC) $(FLG) $(LIB)
-	#gcc -o ft_otool otool.c $(OBJ) $(INC) $(FLG) $(LIB)
+	gcc -o ft_nm src/nm.c $(OBJ) $(INC) $(FLG) $(LIB)
+	#gcc -o ft_otool src/otool.c $(OBJ) $(INC) $(FLG) $(LIB)
 	
-%.o: %.c
-	gcc $(INC) $(FLG) -c $< $
+obj/%.o: src/%.c
+	gcc  -o $@ -c $< $(INC) $(FLG)
 
-h:
+lib:
 	rm -rf $(OBJ)
 	rm -f ft_nm ft_otool
 	rm -rf *.dSYM
@@ -47,7 +47,7 @@ clean:
 	cd libft && make clean
 	cd printf && make clean
 
-fclean: h
+fclean: lib
 	rm -f ft_nm ft_otool
 	rm -rf *.dSYM
 	cd libft && make fclean
@@ -55,6 +55,6 @@ fclean: h
 
 re: fclean all
 
-hre: h all
+libre: lib all
 
 optire: fclean opti

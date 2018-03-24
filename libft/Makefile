@@ -6,7 +6,7 @@
 #    By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/05/06 14:07:52 by lgarczyn          #+#    #+#              #
-#    Updated: 2018/03/10 23:46:45 by lgarczyn         ###   ########.fr        #
+#    Updated: 2018/03/18 22:33:06 by lgarczyn         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -104,6 +104,7 @@ SRC = ft_atoi.c \
 	  ft_putnendl_buf.c \
 	  ft_putspace_buf.c \
 	  ft_putnstr_buf.c \
+	  ft_putmstr_buf.c \
 	  ft_putstr_buf.c \
 	  ft_putnwstr_buf.c \
 	  ft_putwstr_buf.c \
@@ -116,13 +117,12 @@ SRC = ft_atoi.c \
 
 RM = rm -f
 
-NOM = $(basename $(SRC))
-OBJ = $(addsuffix .o, $(NOM))
+OBJ = $(addprefix obj/, $(addsuffix .o, $(basename $(SRC))))
 
 all: $(NAME)
 
-%.o: src/%.c
-	$(CC) $(LFLAGS) -o $@ -c $< $(FLAGS) $(DEB) -I $(INCLUDES)
+obj/%.o: src/%.c
+	$(CC) -o $@ -c $< $(FLAGS) $(DEB) -I $(INCLUDES)
 
 $(NAME) : $(OBJ)
 	ar rc $(NAME) $(OBJ)

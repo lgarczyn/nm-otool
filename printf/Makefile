@@ -20,7 +20,7 @@ SRC =	printf.c \
 
 INC = ../libft/includes
 		
-OBJ = $(SRC:.c=.o)
+OBJ = $(addprefix obj/, $(addsuffix .o, $(basename $(SRC))))
 
 LIB = -L ../libft/ -lft
 
@@ -33,10 +33,10 @@ FLG = -Wall -Wextra -Werror -funsigned-char $(OPT) $(DEB)
 all: $(NAME)
 
 $(NAME):$(OBJ) $(TEST)
-	ar rcs $(NAME) $(OBJ) ../libft/*.o
+	ar rcs $(NAME) $(OBJ)
 	
-%.o: %.c
-	gcc -I$(INC) $(FLG) -c $< $
+obj/%.o: src/%.c
+	gcc -o $@ -c $< -I$(INC) $(FLG)
 
 clean:
 	rm -f $(OBJ)

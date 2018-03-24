@@ -6,11 +6,11 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/08/10 06:57:37 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/25 22:06:14 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/23 20:49:23 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "printf.h"
+#include "private.h"
 #include <stddef.h>
 
 static t_arg		g_args[] =

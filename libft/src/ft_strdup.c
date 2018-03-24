@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/05 23:52:20 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/11 00:03:12 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/23 21:58:15 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ static char	*static_strdup(char const *s1, int len)
 		i++;
 	}
 	dup[i] = '\0';
-	return dup;
+	return (dup);
 }
 
 char		*ft_strdup(char const *s1)
@@ -34,7 +34,7 @@ char		*ft_strdup(char const *s1)
 	int		len;
 
 	len = ft_strlen(s1);
-	return static_strdup(s1, len);
+	return (static_strdup(s1, len));
 }
 
 char		*ft_strndup(char const *s1, int n)

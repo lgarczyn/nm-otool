@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/13 02:13:17 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/24 01:06:58 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,14 +92,14 @@ int					check_ranlib_header(t_vm vm, u64 pos, u64 *out)
 	if (ft_strncmp("#1/", head->name, 3) == 0)
 	{
 		offset = ft_pure_atoi(head->name + 3);
-		if (offset > 256)
-			return (1);
+		CHECK(offset > 256);
 		CHECK_LEN(pos + sizeof(t_ar_header) + offset);
 		print("real name: %s\n", ft_strndup(head->long_name, offset));
 	}
 	if (ft_strncmp("  `\n", head->end, 4) != 0)
 		return (1);
-	*out = sizeof(t_ar_header) + offset;
+	if (out)
+		*out = sizeof(t_ar_header) + offset;
 	return (0);
 }
 
@@ -115,7 +115,7 @@ int					get_vm(t_vm *out, t_mem mem)
 	mach_header = (t_mach_header*)mem.data;
 	fat_header = (t_fat_header*)mem.data;
 	vm.type = get_type(mem.data, &vm.is_swap, &vm.is_64);
-	if (vm.type == f_ranlib && check_ranlib_header(vm, 8, &offset))
+	if (vm.type == f_ranlib && check_ranlib_header(vm, 8, &offset) == 0)
 		vm.ncmds = offset;
 	else if (vm.type == f_fat)
 		vm.ncmds = fat_header->nfat_arch;
@@ -133,18 +133,19 @@ int					get_vm(t_vm *out, t_mem mem)
 	return (0);
 }
 
-void				putdata(t_vm vm, u8 *data, size_t size, size_t addr)
+void				putdata(t_vm *vm, u8 *data, size_t size, size_t addr)
 {
 	size_t			i;
 
+	print("WHAT");
 	i = 0;
 	while (i < size)
 	{
-		if (i % 16 == 0 && vm.is_64)
+		if (i % 16 == 0 && vm->is_64)
 			print("%016lx\t", addr + i);
 		else if (i % 16 == 0)
 			print("%08lx\t", addr + i);
-		if (vm.is_swap && i % 4 != 3)
+		if (vm->is_swap && i % 4 != 3)
 			print("%02x", data[i]);
 		else
 			print("%02x ", data[i]);
