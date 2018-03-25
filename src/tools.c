@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/24 01:06:58 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/25 20:24:11 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,9 @@ t_mem				map(char *filename)
 	if (st.st_size == 0)
 		return (out);
 	out.data = mmap(0, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	out.file = out.data;
 	out.size = st.st_size;
+	out.offset = 0;
 	close(fd);
 	return (out);
 }
@@ -82,19 +84,12 @@ int					check_ranlib_header(t_vm vm, u64 pos, u64 *out)
 
 	CHECK_LEN(pos + sizeof(t_ar_header));
 	head = (t_ar_header*)(vm.mem.data + pos);
-	print("name %s\n", ft_strndup(head->name, sizeof(head->name)));
-	print("date %s\n", ft_strndup(head->date, sizeof(head->date)));
-	print("uid %s\n", ft_strndup(head->uid, sizeof(head->uid)));
-	print("gid %s\n", ft_strndup(head->gid, sizeof(head->gid)));
-	print("mode %s\n", ft_strndup(head->mode, sizeof(head->mode)));
-	print("size %s\n", ft_strndup(head->size, sizeof(head->size)));
 	offset = 0;
 	if (ft_strncmp("#1/", head->name, 3) == 0)
 	{
 		offset = ft_pure_atoi(head->name + 3);
 		CHECK(offset > 256);
 		CHECK_LEN(pos + sizeof(t_ar_header) + offset);
-		print("real name: %s\n", ft_strndup(head->long_name, offset));
 	}
 	if (ft_strncmp("  `\n", head->end, 4) != 0)
 		return (1);
@@ -129,7 +124,6 @@ int					get_vm(t_vm *out, t_mem mem)
 		vm.cpu = NULL;
 	vm.ncmds = s(vm.ncmds, vm.is_swap);
 	*out = vm;
-	print("GOT VM cpu:%x swap:%i 64:%i type:%i\n", s(mach_header->cputype, vm.is_swap), vm.is_swap, vm.is_64, vm.type);
 	return (0);
 }
 
@@ -137,7 +131,6 @@ void				putdata(t_vm *vm, u8 *data, size_t size, size_t addr)
 {
 	size_t			i;
 
-	print("WHAT");
 	i = 0;
 	while (i < size)
 	{

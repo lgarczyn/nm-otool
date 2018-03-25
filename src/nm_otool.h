@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/24 01:06:42 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/25 19:01:42 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,8 @@ typedef struct				s_ar_header {
 typedef struct				s_mem {
 	u8						*data;
 	u64						size;
+	u8						*file;
+	u64						offset;
 }							t_mem;
 
 struct s_vm;
@@ -114,10 +116,10 @@ typedef struct				s_target {
 }							t_target;
 
 typedef enum				e_ftype {
-	f_err,
-	f_object,
-	f_fat,
-	f_ranlib,
+	f_err = 0,
+	f_object = 1,
+	f_fat = 2,
+	f_ranlib = 3,
 }							t_ftype;
 
 typedef struct				s_vm {
