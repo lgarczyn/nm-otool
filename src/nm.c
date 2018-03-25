@@ -6,17 +6,16 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:15 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/25 20:28:05 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/25 20:52:46 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "nm_otool.h"
 
-int					disp_sections(t_vm vm, u64 offset, u64 n, u64 vmaddr)
+int					disp_sections(t_vm vm, u64 offset, u64 n)
 {
 	t_section_64	sec;
 	u64				i;
-	u64				addr;
 
 	i = 0;
 	CHECK_LEN(offset +
@@ -29,9 +28,8 @@ int					disp_sections(t_vm vm, u64 offset, u64 n, u64 vmaddr)
 		{
 			print("Contents of (%s,%s) section\n",
 				vm.target.segment, vm.target.section);
-			addr = sec.offset - vmaddr;
-			CHECK_LEN(addr + sec.size);
-			vm.target.display(&vm, &vm.mem.data[addr], sec.size, sec.addr);
+			CHECK_LEN(sec.offset + sec.size);
+			vm.target.display(&vm, &vm.mem.data[sec.offset], sec.size, sec.addr);
 		}
 		offset += vm.is_64 ? sizeof(t_section_64) : sizeof(t_section_32);
 		i++;
@@ -49,7 +47,7 @@ int					disp_segment(t_vm vm, t_cmd *c, u64 offset)
 		offset += vm.is_64 ? sizeof(c->seg64) : sizeof(c->seg32);
 		CHECK_LEN(offset);
 		seg = read_segment(c, vm.is_swap, vm.is_64);
-		CHECK(disp_sections(vm, offset, seg.nsects, seg.vmaddr));
+		CHECK(disp_sections(vm, offset, seg.nsects));
 	}
 	return (0);
 }
