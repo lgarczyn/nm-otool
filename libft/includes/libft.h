@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/11/07 16:18:53 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/18 20:02:08 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/28 23:47:55 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <string.h>
 # include <errno.h>
 # include <stdlib.h>
+# include <stdint.h>
 
 # define U8 typedef uint8_t u8;
 # define U16 typedef uint16_t u16;
@@ -25,7 +26,7 @@
 # define I8 typedef int8_t i8;
 # define I16 typedef int16_t i16;
 # define I32 typedef int32_t i32;
-# define I64 typedef uint64_t u64;
+# define I64 typedef int64_t i64;
 # define ISIZE typedef ssize_t isize;
 # define ILLEGAL {}; U8 U16 U32 U64 USIZE I8 I16 I32 I64 ISIZE
 
@@ -91,6 +92,8 @@ char				*ft_strchr(const char *s, int c);
 char				*ft_strcpy(char *dst, const char *src);
 char				*ft_strdup(const char *s1);
 char				*ft_strndup(const char *s1, int len);
+char				*ft_strndupwhile(const char *m, size_t n, int (*pred)(int c));
+char				*ft_strdupwhile(const char *m, int (*pred)(int c));
 char				*ft_strjoin(char const *s1, char const *s2);
 char				*ft_strmap(char const *s, char (*f)(char));
 char				*ft_strmapi(char const *s, char (*f)(unsigned int, char));

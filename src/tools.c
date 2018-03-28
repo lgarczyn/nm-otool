@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/25 20:24:11 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/29 00:07:57 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,41 +77,51 @@ const char			*get_cpu(cpu_type_t cpu, bool is_swap)
 	return ("unknown");
 }
 
-int					check_ranlib_header(t_vm vm, u64 pos, u64 *out)
+int					isvalid(int c)
+{
+	return (c > ' ' || c <= '~');
+}
+
+int					check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out)
 {
 	u64				offset;
 	t_ar_header		*head;
 
-	CHECK_LEN(pos + sizeof(t_ar_header));
+	CHECK_LEN(pos + sizeof(t_ar_header) + sizeof(u32));
 	head = (t_ar_header*)(vm.mem.data + pos);
 	offset = 0;
+	if (ft_strncmp("  `\n", head->end, 4) != 0)
+		return (1);
 	if (ft_strncmp("#1/", head->name, 3) == 0)
 	{
 		offset = ft_pure_atoi(head->name + 3);
 		CHECK(offset > 256);
-		CHECK_LEN(pos + sizeof(t_ar_header) + offset);
+		CHECK_LEN(pos + sizeof(t_ar_header) + offset + sizeof(u32));
+		out->name = ft_strndupwhile(head->long_name, offset, &isvalid);
 	}
-	if (ft_strncmp("  `\n", head->end, 4) != 0)
-		return (1);
-	if (out)
-		*out = sizeof(t_ar_header) + offset;
+	else
+	{
+		out->name = ft_strndupwhile(head->name, 16, &isvalid);
+	}
+	out->header_len = offset + sizeof(t_ar_header);
+	out->ncmds = GET_CHECKED_VAL(pos + offset + sizeof(t_ar_header), u32) / 8;
 	return (0);
 }
 
-int					get_vm(t_vm *out, t_mem mem)
+int					get_vm(t_vm *out, t_mem mem, t_target target)
 {
 	t_mach_header	*mach_header;
 	t_fat_header	*fat_header;
 	t_vm			vm;
-	u64				offset;
+	t_ar_info		ar_info;
 
 	vm.mem = mem;
 	CHECK_LEN(sizeof(t_mach_header));
 	mach_header = (t_mach_header*)mem.data;
 	fat_header = (t_fat_header*)mem.data;
 	vm.type = get_type(mem.data, &vm.is_swap, &vm.is_64);
-	if (vm.type == f_ranlib && check_ranlib_header(vm, 8, &offset) == 0)
-		vm.ncmds = offset;
+	if (vm.type == f_ranlib && check_ranlib_header(vm, 8, &ar_info) == 0)
+		vm.ar_info = ar_info;
 	else if (vm.type == f_fat)
 		vm.ncmds = fat_header->nfat_arch;
 	else if (vm.type == f_object)
@@ -123,6 +133,7 @@ int					get_vm(t_vm *out, t_mem mem)
 	else
 		vm.cpu = NULL;
 	vm.ncmds = s(vm.ncmds, vm.is_swap);
+	vm.target = target;
 	*out = vm;
 	return (0);
 }

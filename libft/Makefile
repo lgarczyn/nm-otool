@@ -6,7 +6,7 @@
 #    By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2015/05/06 14:07:52 by lgarczyn          #+#    #+#              #
-#    Updated: 2018/03/18 22:33:06 by lgarczyn         ###   ########.fr        #
+#    Updated: 2018/03/28 20:20:10 by lgarczyn         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -67,6 +67,7 @@ SRC = ft_atoi.c \
 	  ft_strcpy.c \
 	  ft_strdel.c \
 	  ft_strdup.c \
+	  ft_strdupwhile.c \
 	  ft_strequ.c \
 	  ft_striter.c \
 	  ft_striteri.c \

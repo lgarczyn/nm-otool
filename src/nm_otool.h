@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/25 19:01:42 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/29 00:02:27 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,12 @@ typedef struct				s_ar_header {
 	char					long_name[0];
 }							t_ar_header;
 
+typedef struct				s_ar_info {
+	u32						ncmds;
+	u32						header_len;
+	char					*name;
+}							t_ar_info;
+
 typedef struct				s_mem {
 	u8						*data;
 	u64						size;
@@ -124,18 +130,21 @@ typedef enum				e_ftype {
 
 typedef struct				s_vm {
 	t_mem					mem;
-	const char				*cpu;
-	u32						ncmds;
 	t_ftype					type;
+	t_target				target;
+	const char				*cpu;
+	union {
+	u32						ncmds;
+	t_ar_info				ar_info;
+	};
 	bool					is_swap;
 	bool					is_64;
-	t_target				target;
 }							t_vm;
 
 t_mem						map(char *filename);
-int							get_vm(t_vm *f, t_mem mem);
+int							get_vm(t_vm *f, t_mem mem, t_target target);
 const char					*get_cpu(cpu_type_t cpu, bool is_swap);
-int							check_ranlib_header(t_vm vm, u64 pos, u64 *out);
+int							check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out);
 
 void						putdata(t_vm *vm, u8 *data, size_t size, size_t addr);
 
@@ -148,6 +157,7 @@ t_seg_cmd_64				read_segment(void *p, bool is_swap, bool is_64);
 t_section_64				read_section(void *p, bool is_swap, bool is_64);
 
 
+# define P do {printerr("%s:%i %s()\n", __FILE__, __LINE__, __FUNCTION__);} while (0)
 # define BREAK do { return(1000000 + __LINE__); } while (0)
 # define PRINT_L(l) do { printerr("%llu > %llu %s:%i\n", (u64)l, vm.mem.size, __FILE__, __LINE__);} while(0)
 # define PRINT_R(r) do { printerr("%llu != 0 %s:%i\n", (u64)r, __FILE__, __LINE__);} while(0)

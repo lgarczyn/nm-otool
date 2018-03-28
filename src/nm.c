@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:15 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/25 20:52:46 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/29 00:09:09 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,16 +52,19 @@ int					disp_segment(t_vm vm, t_cmd *c, u64 offset)
 	return (0);
 }
 
-int					disp_object(t_vm vm, char *file, const char *cpu)
+int					disp_object(t_vm vm, char *file, char *ar, const char *cpu)
 {
 	u64				offset;
 	t_cmd			*cmd;
 	u32				i;
 
-	if (cpu == NULL)
-		print("%s:\n", file);
-	else
+
+	if (cpu)
 		print("%s (architecture %s):\n", file, cpu);
+	else if (ar)
+		print("%s(%s):\n", ar, file);
+	else
+		print("%s:\n", file);
 	offset = vm.is_64 ? sizeof(t_mach_header_64) : sizeof(t_mach_header);
 	i = 0;
 	while (i++ < vm.ncmds)
@@ -83,7 +86,12 @@ t_mem				get_sub_mem(t_mem mem, u64 offset, u64 size)
 	out.offset = mem.offset + offset;
 	out.data = mem.data + offset;
 	out.size = size;
-
+	if (out.data > mem.data + mem.size)
+		out.size = 0;
+	else if (out.data + out.size > mem.data + mem.size)
+		out.size = (u64)(mem.data + mem.size - out.data);
+	if (out.data + out.size > mem.data + mem.size)
+		printerr("WTF");
 	if (out.file + out.offset != out.data)
 	{
 		printerr("WTF\n");
@@ -102,19 +110,20 @@ t_mem				get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu)
 	if (vm.is_64)
 	{
 		fat_64 = (t_fat_arch_64*)ptr;
-		addr = sl(vm.is_swap, fat_64->offset);
-		size = sl(vm.is_swap, fat_64->size);
+		addr = sl(fat_64->offset, vm.is_swap);
+		size = sl(fat_64->size, vm.is_swap);
 		*cpu = fat_64->cputype;
 	}
 	else
 	{
 		fat_32 = (t_fat_arch*)ptr;
-		addr = s(vm.is_swap, fat_32->offset);
-		size = s(vm.is_swap, fat_32->size);
+		addr = s(fat_32->offset, vm.is_swap);
+		size = s(fat_32->size, vm.is_swap);
 		*cpu = fat_32->cputype;
 	}
 	return (get_sub_mem(vm.mem, addr, size));
 }
+
 int					disp_fat(t_vm vm, char *file)
 {
 	u32				i;
@@ -123,75 +132,74 @@ int					disp_fat(t_vm vm, char *file)
 	void			*ptr;
 	cpu_type_t		cpu;
 
-	CHECK_LEN((u64)sizeof(t_fat_header) +
-		vm.ncmds * (vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch)));
 	i = 0;
-	ptr = vm.mem.data + sizeof(t_fat_header);
+	ptr = GET_CHECKED_PTR(sizeof(t_fat_header),
+		vm.ncmds * (vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch)));
+	archvm = vm;
+
 	while (i < vm.ncmds)
 	{
 		archmem = get_arch_map(vm, ptr, &cpu);
-		CHECK_LEN((archmem.data - vm.mem.data) + archmem.size);
-		archvm.ncmds = 0;
-		CHECK(get_vm(&archvm, archmem));
+		CHECK(get_vm(&archvm, archmem, vm.target));
 		CHECK(archvm.type == f_fat);
-		CHECK(disp_object(archvm, file, get_cpu(cpu, vm.is_swap)));
+		CHECK(disp_object(archvm, file, NULL, get_cpu(cpu, vm.is_swap)));
 		i++;
 		ptr += vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch);
 	}
 	return (0);
 }
 
-int					disp_file(t_mem mem, char *file);
+int					disp_file(t_mem mem, char *file, char *ar);
 
 int					disp_ranlib(t_vm vm, char *file)
 {
 	u64				offset;
-	u32				real_ncmds;
 	t_symdef		*sym;
 	u32				i;
-	u64				name_len;
-	char			*name;
+	t_ar_info		info;
 
-	print("Archive : %s\n", file);
-	offset = 8 + vm.ncmds;
-	real_ncmds = s(GET_CHECKED_VAL(offset, u32) / 8, false);
-	offset += sizeof(u32);
-	sym = (t_symdef*)GET_CHECKED_PTR(offset, real_ncmds * sizeof(t_symdef));
-	offset += real_ncmds * sizeof(t_symdef);
-	name_len = GET_CHECKED_VAL(offset, u32);
-	CHECK(GET_CHECKED_VAL(offset + name_len, u32) != 0);
-	offset += sizeof(u32);
+	offset = 8 + vm.ar_info.header_len;
 	i = 0;
-	while (i < real_ncmds)
+	print("Archive : %s\n", file);
+	if (ft_strcmp(vm.ar_info.name, "__.SYMDEF") == 0 ||
+		ft_strcmp(vm.ar_info.name, "__.SYMDEF SORTED") == 0)
 	{
-		name = (char*)GET_CHECKED_PTR(offset + sym[i].name, name_len);
-		//CHECK IF NULL TERMINATED
-		print("%s(%s):\n", file, name);
-		u64 len;
-		CHECK(check_ranlib_header(vm, sym[i].object, &len));
-		CHECK(disp_file(
-			get_sub_mem(vm.mem, sym[i].object + len, vm.mem.size),
-			name));
-		i++;
-		(void)file;
+		sym = (t_symdef*)GET_CHECKED_PTR(offset + sizeof(u32),
+			vm.ar_info.ncmds * sizeof(t_symdef));
+		while (i < vm.ar_info.ncmds)
+		{
+			CHECK(check_ranlib_header(vm, sym[i].object, &info));
+			CHECK(disp_file(
+				get_sub_mem(vm.mem, sym[i].object + info.header_len, vm.mem.size),
+				info.name,
+				file));
+			i++;
+			(void)file;
+		}
 	}
+	else
+		CHECK(disp_file(
+				get_sub_mem(vm.mem, offset, vm.mem.size),
+				vm.ar_info.name,
+				file));
 	return (0);
 }
 
-int					disp_file(t_mem mem, char *file)
+int					disp_file(t_mem mem, char *file, char *ar)
 {
 	t_vm			vm;
+	t_target		target;
 
-	CHECK(get_vm(&vm, mem));
-	vm.target.segment = SEG_TEXT;
-	vm.target.section = SECT_TEXT;
-	vm.target.display = &putdata;
+	target.segment = SEG_TEXT;
+	target.section = SECT_TEXT;
+	target.display = &putdata;
+	CHECK(get_vm(&vm, mem, target));
 	if (vm.type == f_fat)
 		CHECK(disp_fat(vm, file));
 	else if (vm.type == f_ranlib)
 		CHECK(disp_ranlib(vm, file));
 	else
-		CHECK(disp_object(vm, file, NULL));
+		CHECK(disp_object(vm, file, ar, NULL));
 	return (0);
 }
 
@@ -215,7 +223,7 @@ int					main(int argc, char **argv)
 			ft_perror_file_buf(argv[0], argv[i]);
 			return (errno);
 		}
-		CHECK(disp_file(mem, argv[i]));
+		CHECK(disp_file(mem, argv[i], NULL));
 		munmap(mem.data, mem.size);
 	}
 	ft_flush_buf();
