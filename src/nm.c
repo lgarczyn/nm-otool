@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:15 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/29 00:09:09 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/03/29 01:52:38 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,8 +57,12 @@ int					disp_object(t_vm vm, char *file, char *ar, const char *cpu)
 	u64				offset;
 	t_cmd			*cmd;
 	u32				i;
+	static u64		last_vm;
 
 
+	if (vm.mem.offset == last_vm)
+		return (0);
+	last_vm = vm.mem.offset;
 	if (cpu)
 		print("%s (architecture %s):\n", file, cpu);
 	else if (ar)
@@ -135,14 +139,14 @@ int					disp_fat(t_vm vm, char *file)
 	i = 0;
 	ptr = GET_CHECKED_PTR(sizeof(t_fat_header),
 		vm.ncmds * (vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch)));
-	archvm = vm;
-
 	while (i < vm.ncmds)
 	{
 		archmem = get_arch_map(vm, ptr, &cpu);
+		//print("%llu\n", archmem.offset);
 		CHECK(get_vm(&archvm, archmem, vm.target));
 		CHECK(archvm.type == f_fat);
-		CHECK(disp_object(archvm, file, NULL, get_cpu(cpu, vm.is_swap)));
+		CHECK(disp_object(archvm, file, NULL,
+			vm.ncmds == 1 ? NULL : get_cpu(cpu, vm.is_swap)));//CHECK IF NEEDED
 		i++;
 		ptr += vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch);
 	}
@@ -159,20 +163,19 @@ int					disp_ranlib(t_vm vm, char *file)
 	t_ar_info		info;
 
 	offset = 8 + vm.ar_info.header_len;
-	i = 0;
 	print("Archive : %s\n", file);
 	if (ft_strcmp(vm.ar_info.name, "__.SYMDEF") == 0 ||
 		ft_strcmp(vm.ar_info.name, "__.SYMDEF SORTED") == 0)
 	{
 		sym = (t_symdef*)GET_CHECKED_PTR(offset + sizeof(u32),
 			vm.ar_info.ncmds * sizeof(t_symdef));
+		i = 0;
 		while (i < vm.ar_info.ncmds)
 		{
 			CHECK(check_ranlib_header(vm, sym[i].object, &info));
 			CHECK(disp_file(
 				get_sub_mem(vm.mem, sym[i].object + info.header_len, vm.mem.size),
-				info.name,
-				file));
+				info.name, file));
 			i++;
 			(void)file;
 		}
@@ -180,8 +183,7 @@ int					disp_ranlib(t_vm vm, char *file)
 	else
 		CHECK(disp_file(
 				get_sub_mem(vm.mem, offset, vm.mem.size),
-				vm.ar_info.name,
-				file));
+				vm.ar_info.name, file));
 	return (0);
 }
 
