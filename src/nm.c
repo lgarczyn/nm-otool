@@ -12,22 +12,19 @@
 
 #include "nm_otool.h"
 
-/*char				get_char(t_vm vmunsigned int n_sect)
+char				get_sect_type(char *name)
 {
-	t_section_64	*sect;
-
-	if (!ft_strcmp(sect->name, SECT_DATA))
+	if (!ft_strcmp(name, SECT_DATA))
 		return ('D');
-	else if (!ft_strcmp(sect->name, SECT_BSS))
+	else if (!ft_strcmp(name, SECT_BSS))
 		return ('B');
-	else if (!ft_strcmp(sect->name, SECT_TEXT))
+	else if (!ft_strcmp(name, SECT_TEXT))
 		return ('T');
 	else
 		return ('S');
-	return ('S');
-}*/
+}
 
-char				get_sym_type(t_nlist_64 sym)
+char				get_sym_type(t_nlist_64 sym, t_sect_types *types)
 {
 	char			ret;
 
@@ -44,7 +41,7 @@ char				get_sym_type(t_nlist_64 sym)
 	else if ((sym.n_type & N_TYPE) == N_PBUD)
 		ret = 'U';
 	else if ((sym.n_type & N_TYPE) == N_SECT)
-		ret = '%';//secto(sec, n_sect);
+		ret = types->data[sym.n_sect];
 	else if ((sym.n_type & N_TYPE) == N_INDR)
 		ret = 'I';
 	if ((sym.n_type & N_STAB) != 0)
@@ -54,7 +51,8 @@ char				get_sym_type(t_nlist_64 sym)
 	return (ret);
 }
 
-int					disp_sections(t_vm vm, u64 offset, u64 n)
+
+int					disp_sections(t_vm vm, u64 offset, u64 n, t_sect_types *buffer)
 {
 	t_section_64	sec;
 	u64				i;
@@ -65,7 +63,9 @@ int					disp_sections(t_vm vm, u64 offset, u64 n)
 	while (i < n)
 	{
 		sec = read_section(&vm.mem.data[offset], vm.is_swap, vm.is_64);
-		if (ft_strcmp(sec.sectname, vm.target.section) == 0 &&
+		buffer->data[(buffer->pos)++] = get_sect_type(sec.sectname);
+		if (vm.target.is_otool &&
+			ft_strcmp(sec.sectname, vm.target.section) == 0 &&
 			ft_strcmp(sec.segname, vm.target.segment) == 0)
 		{
 			print("Contents of (%s,%s) section\n",
@@ -73,6 +73,7 @@ int					disp_sections(t_vm vm, u64 offset, u64 n)
 			CHECK_LEN(sec.offset + sec.size);
 			vm.target.display(&vm, &vm.mem.data[sec.offset], sec.size, sec.addr);
 		}
+
 		offset += vm.is_64 ? sizeof(t_section_64) : sizeof(t_section_32);
 		i++;
 	}
@@ -83,11 +84,16 @@ int				check_string(t_vm vm, u8 *str)
 {
 	while (1)
 	{
+		int x = 0;
 		if (str >= vm.mem.file + vm.mem.size || str < vm.mem.file)
-			return 1;
+		{
+			print("bad string %p after %i\n", str - (u64)vm.mem.file, x);
+			return (1);
+		}
 		if (*str == 0)
 			return 0;
 		str++;
+		x++;
 	}
 }
 
@@ -104,23 +110,68 @@ t_nlist_64		list_tolist64(t_nlist list)
 	return out;
 }
 
-int				disp_list(t_vm vm, u32 symoff, u32 stroff, u32 nsyms)
+void				sort_symtab(t_array *array)
 {
-	u32			i;
-	t_nlist		*array;
-	t_nlist_64	*array_64;
-	u8			*string_table;
-	u8			*n;
-	t_nlist_64	sym;
+	t_sym_token		*tokens;
+	size_t			len;
+	size_t			i;
+	size_t			j;
+	int				c;
 
-	array = (t_nlist*)(vm.mem.data + symoff);
-	array_64 = (t_nlist_64*)(vm.mem.data + symoff);
-	string_table = vm.mem.data + stroff;
-
+	tokens = (t_sym_token*)array->data;
+	len = array->pos / sizeof(t_sym_token);
 	i = 0;
-	while (i < nsyms)
+	while(i < len)
 	{
-		sym = vm.is_64 ? array_64[i] : list_tolist64(array[i]);
+		j = i;
+		while (++j < len)
+		{
+			c = ft_strcmp((char*)tokens[i].name, (char*)tokens[j].name);
+			if (c > 0)
+			{
+				tokens[i].sym = tokens[j].sym;
+				tokens[i].name = tokens[j].name;
+			}
+			else if (c == 0)
+			{
+				tokens[i].sym = NULL;
+				tokens[i].name = NULL;
+			}
+		}
+		i++;
+	}
+}
+
+void				disp_symtab(t_vm vm, t_array *array, t_sect_types *types)
+{
+	t_sym_token		*tokens;
+	size_t			len;
+	size_t			i;
+	t_nlist_64		sym;
+
+	tokens = (t_sym_token*)array->data;
+	len = array->pos / sizeof(t_sym_token);
+	i = 0;
+	while(i < len)
+	{
+		if (tokens[i].sym)
+		{
+			sym = vm.is_64 ? *tokens[i].sym : list_tolist64(*(t_nlist*)tokens[i].sym);
+			sym.n_type = get_sym_type(sym, types);
+			if (sym.n_type != 'z' && sym.n_type != 'Z' && sym.n_type!= '?')
+			{
+				if (sym.n_value)
+					print("%.16llx %c %s\n", sym.n_value, sym.n_type, tokens[i].name);
+				else
+					print("% 17 %c %s\n", sym.n_type, tokens[i].name);
+			}
+		}
+		i++;
+	}
+}
+
+/*
+	sym = vm.is_64 ? array_64[i] : list_tolist64(array[i]);
 		sym.n_type = get_sym_type(sym);
 		n = string_table + sym.n_un.n_strx;
 		CHECK(check_string(vm, n));
@@ -134,41 +185,72 @@ int				disp_list(t_vm vm, u32 symoff, u32 stroff, u32 nsyms)
 			else
 				print("% 17 %c %s\n", sym.n_type, n);
 		}
+		*/
+int					array_push(t_array *array, void *data, size_t size)
+{
+	size_t			new_pos;
+
+	new_pos = array->pos + size;
+	if (new_pos > array->size)
+	{
+		CHECK(ft_realloc(&array->data, array->size, new_pos * 2));
+		array->size = new_pos * 2;
+	}
+	ft_memcpy(array->data + array->pos, data, size);
+	array->pos = new_pos;
+	return (0);
+}
+
+int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
+{
+	u32			i;
+	t_nlist		*array;
+	t_nlist_64	*array_64;
+	u8			*string_table;
+	t_sym_token	token;
+
+	array = (t_nlist*)(vm.mem.data + cmd.symoff);
+	array_64 = (t_nlist_64*)(vm.mem.data + cmd.symoff);
+	string_table = vm.mem.data + cmd.stroff;
+	CHECK_LEN(cmd.nsyms * (vm.is_64 ? sizeof(t_nlist_64) : sizeof(t_nlist)));
+	i = 0;
+	while (i < cmd.nsyms)
+	{
+		token.sym = vm.is_64 ? &array_64[i] : (t_nlist_64*)&array[i];
+		if (token.sym->n_un.n_strx == 0)
+			print("lol test\n");
+		token.name = string_table + token.sym->n_un.n_strx;
+		CHECK(check_string(vm, token.name));
+		CHECK(array_push(tokens, &token, sizeof(token)));
 		i++;
 	}
 	return (0);
 }
 
-int				disp_symtab(t_vm vm, t_symtab_cmd cmd)
-{
-	CHECK(disp_list(vm, cmd.symoff, cmd.stroff, cmd.nsyms));
-	return (0);
-}
-
-int					disp_segment(t_vm vm, t_cmd *c, u64 offset)
+//Store, filter, sort and complete symbols
+//Storing pass must fill char[256]
+int					disp_segment(t_vm vm, t_cmd *c, u64 offset,
+	t_sect_types *buffer, t_array *tokens)
 {
 	t_seg_cmd_64	seg;
 	t_symtab_cmd	sym;
 
 	CHECK_LEN(offset + sizeof(c->cmd));
-	if (vm.target.is_otool)
+	if (c->cmd == LC_SEGMENT_64 || c->cmd == LC_SEGMENT)
 	{
-		if (c->cmd == LC_SEGMENT_64 || c->cmd == LC_SEGMENT)
-		{
-			offset += vm.is_64 ? sizeof(c->seg64) : sizeof(c->seg32);
-			CHECK_LEN(offset);
-			seg = read_segment(c, vm.is_swap, vm.is_64);
-			CHECK(disp_sections(vm, offset, seg.nsects));
-		}
+		offset += vm.is_64 ? sizeof(c->seg64) : sizeof(c->seg32);
+		CHECK_LEN(offset);
+		seg = read_segment(c, vm.is_swap, vm.is_64);
+		CHECK(disp_sections(vm, offset, seg.nsects, buffer));
 	}
-	else
+	if (vm.target.is_otool == false)
 	{
 		if (c->cmd == LC_SYMTAB)
 		{
 			offset += sizeof(t_symtab_cmd);
 			CHECK_LEN(offset);
 			sym = read_symtab_cmd(c, vm.is_swap);
-			CHECK(disp_symtab(vm, sym));
+			CHECK(store_symtab(vm, sym, tokens));
 		}
 	}
 	return (0);
@@ -179,13 +261,9 @@ int					disp_object(t_vm vm, char *file, char *ar, const char *cpu)
 	u64				offset;
 	t_cmd			*cmd;
 	u32				i;
-	//if necessary again, reset lastvm somehow
-	//static u64		last_vm = 0;
+	t_sect_types	buffer;
+	t_array			tokens;
 
-
-	//if (vm.mem.offset == last_vm)
-	// 	return (0);
-	//last_vm = vm.mem.offset;
 	if (cpu)
 		print("%s (architecture %s):\n", file, cpu);
 	else if (ar)
@@ -194,15 +272,19 @@ int					disp_object(t_vm vm, char *file, char *ar, const char *cpu)
 		print("%s:\n", file);
 	offset = vm.is_64 ? sizeof(t_mach_header_64) : sizeof(t_mach_header);
 	i = 0;
+	bzero(&buffer, sizeof(t_sect_types));
+	bzero(&tokens, sizeof(t_array));
 	while (i++ < vm.ncmds)
 	{
 		CHECK_LEN(offset + sizeof(t_load_cmd));
 		cmd = (t_cmd*)(vm.mem.data + offset);
 		swap_load(&cmd->load, vm.is_swap);
-		CHECK(disp_segment(vm, cmd, offset));
+		CHECK(disp_segment(vm, cmd, offset, &buffer, &tokens));
 		CHECK(cmd->load.cmdsize == 0);
 		offset += cmd->load.cmdsize;
 	}
+	sort_symtab(&tokens);
+	disp_symtab(vm, &tokens, &buffer);
 	return (0);
 }
 
@@ -266,7 +348,6 @@ int					disp_fat(t_vm vm, char *file)
 	while (i < vm.ncmds)
 	{
 		archmem = get_arch_map(vm, ptr, &cpu);
-		//print("%llu\n", archmem.offset);
 		CHECK(get_vm(&archvm, archmem, vm.target));
 		CHECK(archvm.type == f_fat);
 		CHECK(disp_object(archvm, file, NULL,
@@ -347,12 +428,15 @@ int					main(int argc, char **argv)
 	while (++i < argc)
 	{
 		mem = map(argv[i]);
-		if (mem.data == NULL)
+		if (mem.data == (u8*)-1 || mem.data == NULL)
 		{
 			ft_perror_file_buf(argv[0], argv[i]);
-			return (errno);
+			//return (errno);
+			print("ERRNO: %i\n", errno);
+			continue;
 		}
-		CHECK_GATE(disp_file(mem, argv[i], NULL));
+		//CHECK_GATE(disp_file(mem, argv[i], NULL));
+		print("RETURN: %i\n", disp_file(mem, argv[i], NULL));
 		munmap(mem.data, mem.size);
 	}
 	ft_flush_buf();

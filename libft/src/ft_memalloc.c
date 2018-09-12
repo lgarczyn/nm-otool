@@ -20,5 +20,7 @@ void		*ft_memalloc(size_t size)
 	if (size == 0)
 		return (NULL);
 	str = malloc(size);
+	if (!str)
+		return (NULL);
 	return (ft_memset(str, '\0', size));
 }

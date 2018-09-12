@@ -48,6 +48,13 @@ typedef struct		s_list
 	struct s_list	*next;
 }					t_list;
 
+typedef struct		s_array
+{
+	void			*data;
+	size_t			pos;
+	size_t			size;
+}					t_array;
+
 typedef struct		s_buffer
 {
 	char			*buffer;
@@ -135,7 +142,9 @@ void				*ft_memchr(const void *s, int c, size_t n);
 void				*ft_memcpy(void *dst, const void *src, size_t n);
 void				*ft_memmove(void *dst, const void *src, size_t n);
 void				*ft_memset(void *b, int c, size_t len);
-void				*ft_realloc(void *ptr, size_t size);
+int					ft_realloc(void **ptr, size_t old_size, size_t new_size);
+int					ft_realloc_double(void **ptr, size_t *old_size);
+int					ft_realloc_array(t_array *array);
 void				ft_bzero(void *s, size_t n);
 void				ft_lstadd(t_list **alst, t_list *n);
 void				ft_lstdel(t_list **alst, void (*del)(void *, size_t));

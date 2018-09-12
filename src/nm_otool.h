@@ -116,6 +116,19 @@ typedef struct				s_mem {
 	u64						offset;
 }							t_mem;
 
+typedef struct				s_sect_types
+{
+	char					data[MAX_SECT + 1];
+	size_t					pos;
+}							t_sect_types;
+
+typedef struct				s_sym_token {
+	t_nlist_64				*sym;
+	u8						*name;
+}							t_sym_token;
+
+
+
 struct s_vm;
 
 typedef struct				s_target {
