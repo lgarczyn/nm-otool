@@ -24,11 +24,11 @@ OBJ = $(addprefix obj/, $(addsuffix .o, $(basename $(SRC))))
 
 LIB = -L ../libft/ -lft
 
-DEB = -g
+DEB = -g3 -fsanitize=address
 
 OPT = -O2
 
-FLG = -Wall -Wextra -Werror -funsigned-char $(OPT) $(DEB)
+FLG = -Wall -Wextra -Werror -funsigned-char $(OPT) #$(DEB)
 
 all: $(NAME)
 
@@ -36,6 +36,7 @@ $(NAME):$(OBJ) $(TEST)
 	ar rcs $(NAME) $(OBJ)
 	
 obj/%.o: src/%.c
+	@mkdir -p obj
 	gcc -o $@ -c $< -I$(INC) $(FLG)
 
 clean:

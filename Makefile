@@ -20,11 +20,11 @@ OBJ = $(addprefix obj/, $(addsuffix .o, $(basename $(SRC))))
 
 LIB = -L libft -lft -L printf -lftprintf
 
-DEB = 
+DEB = -g3 -fsanitize=address
 
-OPT = -O2
+OPT = -O0
 
-FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT) $(DEB)
+FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT) -g #$(DEB)
 
 all: $(NAME)
 
@@ -35,6 +35,7 @@ $(NAME):$(OBJ)
 	#gcc -o ft_otool src/otool.c $(OBJ) $(INC) $(FLG) $(LIB)
 	
 obj/%.o: src/%.c
+	@mkdir -p obj
 	gcc  -o $@ -c $< $(INC) $(FLG)
 
 lib:

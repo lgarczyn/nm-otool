@@ -12,11 +12,11 @@
 
 NAME = libft.a
 
-DEB = -g
+DEB = -g3 -fsanitize=address
 
 OPT = -O2
 
-FLAGS = -Wall -Wextra -Werror -funsigned-char -fno-signed-char $(OPT) $(DEB)
+FLAGS = -Wall -Wextra -Werror -funsigned-char -fno-signed-char  $(OPT) #$(DEB)
 
 INCLUDES = includes
 
@@ -123,7 +123,8 @@ OBJ = $(addprefix obj/, $(addsuffix .o, $(basename $(SRC))))
 all: $(NAME)
 
 obj/%.o: src/%.c
-	$(CC) -o $@ -c $< $(FLAGS) $(DEB) -I $(INCLUDES)
+	@mkdir -p obj
+	$(CC) -o $@ -c $< $(FLAGS) -I $(INCLUDES)
 
 $(NAME) : $(OBJ)
 	ar rc $(NAME) $(OBJ)
