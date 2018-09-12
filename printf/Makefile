@@ -26,9 +26,9 @@ LIB = -L ../libft/ -lft
 
 DEB = -g3 -fsanitize=address
 
-OPT = -O2
+OPT = -O0
 
-FLG = -Wall -Wextra -Werror -funsigned-char $(OPT) #$(DEB)
+FLG = -Wall -Wextra -Werror -funsigned-char $(OPT) $(DEB)
 
 all: $(NAME)
 

@@ -24,7 +24,7 @@ DEB = -g3 -fsanitize=address
 
 OPT = -O0
 
-FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT) -g #$(DEB)
+FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT) -g $(DEB)
 
 all: $(NAME)
 

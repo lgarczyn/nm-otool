@@ -35,7 +35,7 @@ u64					sl(u64 x, bool swap)
 	return (x);
 }
 
-void				swap_load(t_load_command *cmd, bool swap)
+void				swap_load(t_load_cmd *cmd, bool swap)
 {
 	cmd->cmd = s(cmd->cmd, swap);
 	cmd->cmdsize = s(cmd->cmdsize, swap);
@@ -49,8 +49,6 @@ t_seg_cmd_64		read_segment(void *p, bool swap, bool is64)
 
 	p64 = (t_seg_cmd_64*)p;
 	p32 = (t_seg_cmd_32*)p;
-	out.cmd = s(p64->cmd, swap);
-	out.cmdsize = s(p64->cmdsize, swap);
 	ft_memmove(out.segname, &p64->segname, sizeof(out.segname));
 	out.vmaddr = is64 ? sl(p64->vmaddr, swap) : s(p32->vmaddr, swap);
 	out.vmsize = is64 ? sl(p64->vmsize, swap) : s(p32->vmsize, swap);
@@ -58,6 +56,21 @@ t_seg_cmd_64		read_segment(void *p, bool swap, bool is64)
 	out.filesize = is64 ? sl(p64->filesize, swap) : s(p32->filesize, swap);
 	out.nsects = s(is64 ? p64->nsects : p32->nsects, swap);
 	out.flags = s(is64 ? p64->flags : p32->flags, swap);
+	return (out);
+}
+
+t_symtab_cmd		read_symtab_cmd(void *p, bool is_swap)
+{
+	t_symtab_cmd	out;
+	t_symtab_cmd	*in;
+
+    in = (t_symtab_cmd*)p;
+
+	out.symoff = s(in->symoff, is_swap);
+	out.nsyms = s(in->nsyms, is_swap);
+	out.stroff = s(in->stroff, is_swap);
+	out.strsize = s(in->strsize, is_swap);
+
 	return (out);
 }
 

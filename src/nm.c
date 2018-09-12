@@ -12,6 +12,48 @@
 
 #include "nm_otool.h"
 
+/*char				get_char(t_vm vmunsigned int n_sect)
+{
+	t_section_64	*sect;
+
+	if (!ft_strcmp(sect->name, SECT_DATA))
+		return ('D');
+	else if (!ft_strcmp(sect->name, SECT_BSS))
+		return ('B');
+	else if (!ft_strcmp(sect->name, SECT_TEXT))
+		return ('T');
+	else
+		return ('S');
+	return ('S');
+}*/
+
+char				get_sym_type(t_nlist_64 sym)
+{
+	char			ret;
+
+	ret = '?';
+	if ((sym.n_type & N_TYPE) == N_UNDF)
+	{
+		if (sym.n_value)
+			ret = 'C';
+		else
+			ret = 'U';
+	}
+	else if ((sym.n_type & N_TYPE) == N_ABS)
+		ret = 'A';
+	else if ((sym.n_type & N_TYPE) == N_PBUD)
+		ret = 'U';
+	else if ((sym.n_type & N_TYPE) == N_SECT)
+		ret = '%';//secto(sec, n_sect);
+	else if ((sym.n_type & N_TYPE) == N_INDR)
+		ret = 'I';
+	if ((sym.n_type & N_STAB) != 0)
+		ret = 'Z';
+	if ((sym.n_type & N_EXT) == 0 && ret != '?')
+		ret += 32;
+	return (ret);
+}
+
 int					disp_sections(t_vm vm, u64 offset, u64 n)
 {
 	t_section_64	sec;
@@ -37,17 +79,97 @@ int					disp_sections(t_vm vm, u64 offset, u64 n)
 	return (0);
 }
 
+int				check_string(t_vm vm, u8 *str)
+{
+	while (1)
+	{
+		if (str >= vm.mem.file + vm.mem.size || str < vm.mem.file)
+			return 1;
+		if (*str == 0)
+			return 0;
+		str++;
+	}
+}
+
+t_nlist_64		list_tolist64(t_nlist list)
+{
+	t_nlist_64	out;
+
+	out.n_un.n_strx = list.n_un.n_strx;
+	out.n_type = list.n_type;
+	out.n_sect = list.n_sect;
+	out.n_desc = list.n_desc;
+	out.n_value = list.n_value;
+
+	return out;
+}
+
+int				disp_list(t_vm vm, u32 symoff, u32 stroff, u32 nsyms)
+{
+	u32			i;
+	t_nlist		*array;
+	t_nlist_64	*array_64;
+	u8			*string_table;
+	u8			*n;
+	t_nlist_64	sym;
+
+	array = (t_nlist*)(vm.mem.data + symoff);
+	array_64 = (t_nlist_64*)(vm.mem.data + symoff);
+	string_table = vm.mem.data + stroff;
+
+	i = 0;
+	while (i < nsyms)
+	{
+		sym = vm.is_64 ? array_64[i] : list_tolist64(array[i]);
+		sym.n_type = get_sym_type(sym);
+		n = string_table + sym.n_un.n_strx;
+		CHECK(check_string(vm, n));
+		//if ((vm.is_64 ? array_64[i].n_type : array[i].n_type) != 100)
+		if (sym.n_type != 'z' && sym.n_type != 'Z' && sym.n_type!= '?')
+		{
+			if (sym.n_type == '%')
+				print("%.16llx %c %s s:%i d:%i\n", sym.n_value, sym.n_type, n, sym.n_sect, sym.n_desc);			
+			else if (sym.n_value)
+				print("%.16llx %c %s\n", sym.n_value, sym.n_type, n);
+			else
+				print("% 17 %c %s\n", sym.n_type, n);
+		}
+		i++;
+	}
+	return (0);
+}
+
+int				disp_symtab(t_vm vm, t_symtab_cmd cmd)
+{
+	CHECK(disp_list(vm, cmd.symoff, cmd.stroff, cmd.nsyms));
+	return (0);
+}
+
 int					disp_segment(t_vm vm, t_cmd *c, u64 offset)
 {
 	t_seg_cmd_64	seg;
+	t_symtab_cmd	sym;
 
 	CHECK_LEN(offset + sizeof(c->cmd));
-	if (c->cmd == LC_SEGMENT_64 || c->cmd == LC_SEGMENT)
+	if (vm.target.is_otool)
 	{
-		offset += vm.is_64 ? sizeof(c->seg64) : sizeof(c->seg32);
-		CHECK_LEN(offset);
-		seg = read_segment(c, vm.is_swap, vm.is_64);
-		CHECK(disp_sections(vm, offset, seg.nsects));
+		if (c->cmd == LC_SEGMENT_64 || c->cmd == LC_SEGMENT)
+		{
+			offset += vm.is_64 ? sizeof(c->seg64) : sizeof(c->seg32);
+			CHECK_LEN(offset);
+			seg = read_segment(c, vm.is_swap, vm.is_64);
+			CHECK(disp_sections(vm, offset, seg.nsects));
+		}
+	}
+	else
+	{
+		if (c->cmd == LC_SYMTAB)
+		{
+			offset += sizeof(t_symtab_cmd);
+			CHECK_LEN(offset);
+			sym = read_symtab_cmd(c, vm.is_swap);
+			CHECK(disp_symtab(vm, sym));
+		}
 	}
 	return (0);
 }
@@ -57,12 +179,13 @@ int					disp_object(t_vm vm, char *file, char *ar, const char *cpu)
 	u64				offset;
 	t_cmd			*cmd;
 	u32				i;
-	static u64		last_vm;
+	//if necessary again, reset lastvm somehow
+	//static u64		last_vm = 0;
 
 
-	if (vm.mem.offset == last_vm)
-		return (0);
-	last_vm = vm.mem.offset;
+	//if (vm.mem.offset == last_vm)
+	// 	return (0);
+	//last_vm = vm.mem.offset;
 	if (cpu)
 		print("%s (architecture %s):\n", file, cpu);
 	else if (ar)
@@ -73,10 +196,11 @@ int					disp_object(t_vm vm, char *file, char *ar, const char *cpu)
 	i = 0;
 	while (i++ < vm.ncmds)
 	{
-		CHECK_LEN(offset + sizeof(t_load_command));
+		CHECK_LEN(offset + sizeof(t_load_cmd));
 		cmd = (t_cmd*)(vm.mem.data + offset);
 		swap_load(&cmd->load, vm.is_swap);
 		CHECK(disp_segment(vm, cmd, offset));
+		CHECK(cmd->load.cmdsize == 0);
 		offset += cmd->load.cmdsize;
 	}
 	return (0);
@@ -192,9 +316,12 @@ int					disp_file(t_mem mem, char *file, char *ar)
 	t_vm			vm;
 	t_target		target;
 
-	target.segment = SEG_TEXT;
-	target.section = SECT_TEXT;
-	target.display = &putdata;
+	// target.segment = SEG_TEXT;
+	// target.section = SECT_TEXT;
+	// target.display = &putdata;
+	// target.is_otool = true;
+
+	target.is_otool = false;
 	CHECK(get_vm(&vm, mem, target));
 	if (vm.type == f_fat)
 		CHECK(disp_fat(vm, file));
@@ -225,7 +352,7 @@ int					main(int argc, char **argv)
 			ft_perror_file_buf(argv[0], argv[i]);
 			return (errno);
 		}
-		CHECK(disp_file(mem, argv[i], NULL));
+		CHECK_GATE(disp_file(mem, argv[i], NULL));
 		munmap(mem.data, mem.size);
 	}
 	ft_flush_buf();
