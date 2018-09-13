@@ -12,7 +12,7 @@
 
 NAME = nm_otool
 
-SRC = tools.c swap.c
+SRC = tools.c nm_tools.c swap.c headers.c parsing.c types.c
 
 INC = -Ilibft/includes -Iprintf/includes
 		
@@ -32,7 +32,7 @@ $(NAME):$(OBJ)
 	cd libft && make
 	cd printf && make
 	gcc -o ft_nm src/nm.c $(OBJ) $(INC) $(FLG) $(LIB)
-	#gcc -o ft_otool src/otool.c $(OBJ) $(INC) $(FLG) $(LIB)
+	gcc -o ft_otool src/otool.c $(OBJ) $(INC) $(FLG) $(LIB)
 	
 obj/%.o: src/%.c
 	@mkdir -p obj

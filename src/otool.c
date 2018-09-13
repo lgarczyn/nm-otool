@@ -6,41 +6,61 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:32 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/01/26 13:56:42 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/14 00:39:35 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "nm_otool.h"
 
-int				otool(char *filename)
+static void			putdata(t_vm *vm, u8 *data, size_t size, size_t addr)
 {
-	char		*data;
-	u64			len;
+	size_t			i;
 
-	data = (char*)map(filename, &len);
-	if (data == NULL)
-		return (1);	
-
-	munmap(data, len);
-	return (0);
+	i = 0;
+	while (i < size)
+	{
+		if (i % 16 == 0 && vm->is_64)
+			print("%016lx\t", addr + i);
+		else if (i % 16 == 0)
+			print("%08lx\t", addr + i);
+		if (vm->is_swap && i % 4 != 3)
+			print("%02x", data[i]);
+		else
+			print("%02x ", data[i]);
+		if (i % 16 == 15)
+			print("\n");
+		i++;
+	}
+	if (i % 16 != 0)
+		print("\n");
 }
 
-int				main(int argc, char **argv)
+int					main(int argc, char **argv)
 {
-	int			i;
+	int				i;
+	t_mem			mem;
+	t_target		target;
 
+	target.segment = SEG_TEXT;
+	target.section = SECT_TEXT;
+	target.display = &putdata;
+	target.is_otool = true;
+	ft_buf(malloc(4096), 4096, 1);
 	if (argc == 1)
 	{
-		ft_putstr_fd(argv[0], 2);
-		ft_putstr_fd(": at least one file must be specified", 2);
-		return (-1);
+		argc = 2;
+		argv[1] = "a.out";
 	}
-	ft_buf(malloc(4096), 4096, 1);
+	target.disp_names = true;
 	i = 0;
 	while (++i < argc)
 	{
-		if (otool("a.out"))
-			ft_perror_file_buf(argv[0], argv[i]);
+		CHECK_SKIP(map(&mem, argv[i]));
+		CHECK_DISP(disp_file(mem, target, argv[i], NULL));
+		munmap(mem.data, mem.size);
 	}
+	ft_flush_buf();
 	return (errno);
 }
+
+
