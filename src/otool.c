@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:32 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/14 00:39:35 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/14 01:25:45 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,8 @@ int					main(int argc, char **argv)
 	i = 0;
 	while (++i < argc)
 	{
-		CHECK_SKIP(map(&mem, argv[i]));
-		CHECK_DISP(disp_file(mem, target, argv[i], NULL));
+		CHECK_SKIP(argv[i], map(&mem, argv[i]));
+		CHECK_DISP(argv[i], disp_file(mem, target, argv[i], NULL));
 		munmap(mem.data, mem.size);
 	}
 	ft_flush_buf();

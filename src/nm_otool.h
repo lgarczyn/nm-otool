@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/14 00:38:03 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/14 01:55:05 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,12 +81,12 @@ typedef struct				s_symdef {
 
 typedef union				u_cmd {
 	u32						cmd;
-	t_load_cmd			load;
+	t_load_cmd				load;
 	t_seg_cmd_32			name;
 	t_seg_cmd_32			seg32;
 	t_seg_cmd_64			seg64;
-	t_fvmlib_cmd		fvmlib;
-	t_dylib_cmd			dylib;
+	t_fvmlib_cmd			fvmlib;
+	t_dylib_cmd				dylib;
 }							t_cmd;
 
 # define AR_START			"!<arch>\n"
@@ -150,7 +150,7 @@ typedef struct				s_vm {
 	t_mem					mem;
 	t_ftype					type;
 	t_target				target;
-	const char				*cpu;
+	cpu_type_t				cpu;
 	union {
 	u32						ncmds;
 	t_ar_info				ar_info;
@@ -170,7 +170,7 @@ int							array_push(t_array *array, void *data, size_t size);
 char						get_sect_type(char *name);
 char						get_sym_type(t_nlist_64 sym, t_sect_types *types);
 t_ftype						get_type(void *p, bool *is_swap, bool *is_64);
-const char					*get_cpu(cpu_type_t cpu, bool is_swap);
+const char					*get_cpu(cpu_type_t cpu);
 
 void						disp_symtab(t_vm vm, t_array *array, t_sect_types *types);
 int							store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens);
@@ -188,18 +188,19 @@ t_symtab_cmd				read_symtab_cmd(void *p, bool is_swap);
 t_seg_cmd_64				read_segment(void *p, bool is_swap, bool is_64);
 t_section_64				read_section(void *p, bool is_swap, bool is_64);
 
+# define BREAK do { return(EINVAL); } while (0)
 
-# define P do {printerr("%s:%i %s()\n", __FILE__, __LINE__, __FUNCTION__);} while (0)
-# define BREAK do { return(1000000 + __LINE__); } while (0)
-# define PRINT_L(l) do { printerr("%llu > %llu %s:%i\n", (u64)l, vm.mem.size, __FILE__, __LINE__);} while(0)
-# define PRINT_R(r) do { printerr("%s\nERRNO = %llu %s:%i\n", ft_strerror(r), (u64)r, __FILE__, __LINE__);} while(0)
+# define L() do { printerr(" %s:%i\n", __FILE__, __LINE__);} while(0) 
+# define PRINT_L(l) do { printerr("%llu > %llu", (u64)l, vm.mem.size); L();} while(0)
+# define PRINT_R(r) do { printerr("ERR = %llu", __FILE__, __LINE__); L();} while(0)
+# define PRINT_F(f, r) do { PRINT_R(r); printerr("%s: %s\n", f, ft_strerror(r));} while(0)
 
 # define CHECK_LEN(l) do { if (l > vm.mem.size) { PRINT_L(l); BREAK; }} while (0)
 # define GET_CHECKED_PTR(o, l) ({CHECK_LEN(o+l); vm.mem.data+o;})
 # define GET_CHECKED_VAL(o, t) *(t*)({CHECK_LEN(o+sizeof(t)); vm.mem.data+o;})
 
 # define CHECK(t) do {int r = t; if (r) {PRINT_R(r); return(r);}} while (0)
-# define CHECK_SKIP(t) if (1) {int r = t; if (r) {PRINT_R(r); continue;}} else {}
-# define CHECK_DISP(t) do {int r = t; if (r) {PRINT_R(r); }} while (0)
+# define CHECK_SKIP(f, t) if (1) {int r = t; if (r) {PRINT_F(f, r); continue;}} else {}
+# define CHECK_DISP(f, t) do {int r = t; if (r) {PRINT_F(f, r); }} while (0)
 
 #endif

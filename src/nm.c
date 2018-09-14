@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 19:40:15 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/14 00:39:31 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/14 09:34:57 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,12 @@ int					main(int argc, char **argv)
 		argc = 2;
 		argv[1] = "a.out";
 	}
-	target.disp_names = argc != 2;
+	target.disp_names = argc > 2;
 	i = 0;
 	while (++i < argc)
 	{
-		CHECK_SKIP(map(&mem, argv[i]));
-		CHECK_DISP(disp_file(mem, target, argv[i], NULL));
+		CHECK_SKIP(argv[i], map(&mem, argv[i]));
+		CHECK_DISP(argv[i], disp_file(mem, target, argv[i], NULL));
 		munmap(mem.data, mem.size);
 	}
 	ft_flush_buf();

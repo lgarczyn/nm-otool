@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/13 22:52:41 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/13 23:46:55 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/14 09:04:59 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,33 +66,36 @@ static void			sort_symtab(t_array *array)
 	}
 }
 
+//REMEMBER TO USE IS_SWAP
+
 void				disp_symtab(t_vm vm, t_array *array, t_sect_types *types)
 {
 	t_sym_token		*tokens;
 	size_t			len;
 	size_t			i;
-	t_nlist_64		sym;
+	t_nlist_64		s;
 
 	sort_symtab(array);
 	tokens = (t_sym_token*)array->data;
 	len = array->pos / sizeof(t_sym_token);
-	i = 0;
-	while (i < len)
-	{
+	i = -1;
+	while (++i < len)
 		if (tokens[i].sym)
 		{
-			sym = vm.is_64 ? *tokens[i].sym : list_tolist64(*(t_nlist*)tokens[i].sym);
-			sym.n_type = get_sym_type(sym, types);
-			if (sym.n_type != 'z' && sym.n_type != 'Z' && sym.n_type!= '?')
-			{
-				if (sym.n_value)
-					print("%.16llx %c %s\n", sym.n_value, sym.n_type, tokens[i].name);
+			s = vm.is_64 ? *tokens[i].sym : list_tolist64(*(t_nlist*)tokens[i].sym);
+			s.n_type = get_sym_type(s, types);
+			if (s.n_type == 'z' || s.n_type == 'Z' || s.n_type == '?')
+				continue;
+			if (vm.cpu != CPU_TYPE_I386)
+				if (s.n_value || s.n_type == 'T')
+					print("%.16llx %c %s\n", s.n_value, s.n_type, tokens[i].name);
 				else
-					print("% 17 %c %s\n", sym.n_type, tokens[i].name);
-			}
+					print("% 17 %c %s\n", s.n_type, tokens[i].name);
+			else if (s.n_value || s.n_type == 'T')
+				print("%.8llx %c %s\n", s.n_value, s.n_type, tokens[i].name);
+			else
+				print("% 9 %c %s\n", s.n_type, tokens[i].name);
 		}
-		i++;
-	}
 }
 
 int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
@@ -106,7 +109,7 @@ int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
 	array = (t_nlist*)(vm.mem.data + cmd.symoff);
 	array_64 = (t_nlist_64*)(vm.mem.data + cmd.symoff);
 	string_table = vm.mem.data + cmd.stroff;
-	CHECK_LEN(cmd.nsyms * (vm.is_64 ? sizeof(t_nlist_64) : sizeof(t_nlist)));
+	CHECK_LEN(cmd.symoff + cmd.nsyms * (vm.is_64 ? sizeof(t_nlist_64) : sizeof(t_nlist)));
 	i = 0;
 	while (i < cmd.nsyms)
 	{

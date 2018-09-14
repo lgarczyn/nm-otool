@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/13 23:11:58 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/14 00:55:46 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/14 01:28:05 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,12 +67,15 @@ t_ftype				get_type(void *p, bool *is_swap, bool *is_64)
 		return (f_object);
 	if (ft_strncmp("!<arch>\n", (char*)p, 8) == 0)
 		return (f_ranlib);
-	f = ft_strndup((char*)p, 8);
-	print("UNKOWN_TYPE: %D\n", f);
+	f = (char*)p;
+	printerr("UNKOWN_TYPE: %X%X%X%X%X%X%X%X%X%X%X%X%X%X%X%X '%.16s'\n",
+		f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7],
+		f[8], f[9], f[10], f[11], f[12], f[13], f[14], f[15],
+		f);
 	return (f_err);
 }
 
-const char			*get_cpu(cpu_type_t cpu, bool is_swap)
+const char			*get_cpu(cpu_type_t cpu)
 {
 	static char		*names[] = {
 		"", "vax", "romp", "", "ns32032", "ns32332", "", "i386",
@@ -80,7 +83,6 @@ const char			*get_cpu(cpu_type_t cpu, bool is_swap)
 		"i860", "i860_little", "rs6000", "ppc"
 	};
 
-	cpu = s(cpu, is_swap);
 	if (cpu == CPU_TYPE_ANY)
 		return ("any");
 	if (cpu == CPU_TYPE_X86_64)

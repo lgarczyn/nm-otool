@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/13 22:44:27 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/14 00:37:29 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/14 09:36:31 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ int					disp_segment(t_vm vm, t_cmd *c, u64 offset,
 	return (0);
 }
 
-int					disp_object(t_vm vm, char *file, char *ar)
+int					disp_object(t_vm vm, char *file, char *ar, bool disp_cpu)
 {
 	u64				offset;
 	t_cmd			*cmd;
@@ -75,10 +75,12 @@ int					disp_object(t_vm vm, char *file, char *ar)
 	t_sect_types	buffer;
 	t_array			tokens;
 
-	if (vm.cpu)
-		print("%s (architecture %s):\n", file, vm.cpu);
+	if (disp_cpu)
+		print("%s (architecture %s):\n", file, get_cpu(vm.cpu));
 	else if (ar)
 		print("%s(%s):\n", ar, file);
+	else if (vm.target.disp_names && vm.target.is_otool == false)
+		print("\n%s:\n", file);
 	else if (vm.target.disp_names)
 		print("%s:\n", file);
 	offset = vm.is_64 ? sizeof(t_mach_header_64) : sizeof(t_mach_header);
@@ -107,7 +109,7 @@ t_mem				get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu)
 
 	fat_32 = (t_fat_arch*)ptr;
 	fat_64 = (t_fat_arch_64*)ptr;
-	*cpu = fat_32->cputype;
+	*cpu = s(fat_32->cputype, vm.is_swap);
 	if (vm.is_64)
 	{
 		addr = sl(fat_64->offset, vm.is_swap);
@@ -136,9 +138,8 @@ int					disp_fat(t_vm vm, char *file)
 	{
 		archmem = get_arch_map(vm, ptr, &cpu);
 		CHECK(get_vm(&archvm, archmem, vm.target));
-		//archvm.cpu = vm.ncmds == 1 ? NULL : get_cpu(cpu, vm.is_swap);
 		CHECK(archvm.type == f_fat);
-		CHECK(disp_object(archvm, file, NULL));//CHECK IF NEEDED
+		CHECK(disp_object(archvm, file, NULL, vm.ncmds > 1));
 		i++;
 		ptr += vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch);
 	}
@@ -187,6 +188,6 @@ int					disp_file(t_mem mem, t_target target, char *file, char *ar)
 	else if (vm.type == f_ranlib)
 		CHECK(disp_ranlib(vm, target, file));
 	else
-		CHECK(disp_object(vm, file, ar));
+		CHECK(disp_object(vm, file, ar, false));
 	return (0);
 }
