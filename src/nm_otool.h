@@ -157,15 +157,21 @@ typedef struct				s_vm {
 	};
 	bool					is_swap;
 	bool					is_64;
+
+	t_sect_types			*sect_types;
+	t_array					*sym_tokens;
 }							t_vm;
 
 int							map(t_mem *out, char *filename);
-t_mem						get_sub_mem(t_mem mem, u64 offset, u64 size);
 int							get_vm(t_vm *f, t_mem mem, t_target target);
 int							check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out);
+t_mem						get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu);
 
+t_mem						get_sub_mem(t_mem mem, u64 offset, u64 size);
 int							check_string(t_vm vm, u8 *str);
 int							array_push(t_array *array, void *data, size_t size);
+void						sect_type_push(t_sect_types *stypes, char *sectname);
+cpu_type_t					get_cpu_type(void);
 
 char						get_sect_type(char *name);
 char						get_sym_type(t_nlist_64 sym, t_sect_types *types);
@@ -176,6 +182,7 @@ void						disp_symtab(t_vm vm, t_array *array, t_sect_types *types);
 int							store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens);
 
 int							disp_file(t_mem mem, t_target target, char *file, char *ar);
+int							disp_ranlib(t_vm vm, char *file);
 
 
 u32							s(u32 x, bool is_swap);

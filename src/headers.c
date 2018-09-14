@@ -38,28 +38,6 @@ int					map(t_mem *out, char *filename)
 	return (0);
 }
 
-t_mem				get_sub_mem(t_mem mem, u64 offset, u64 size)
-{
-	t_mem			out;
-
-	out.file = mem.file;
-	out.offset = mem.offset + offset;
-	out.data = mem.data + offset;
-	out.size = size;
-	if (out.data > mem.data + mem.size)
-		out.size = 0;
-	else if (out.data + out.size > mem.data + mem.size)
-		out.size = (u64)(mem.data + mem.size - out.data);
-	if (out.data + out.size > mem.data + mem.size)
-		printerr("WTF");
-	if (out.file + out.offset != out.data)
-	{
-		printerr("WTF\n");
-		print("WTF\n");
-	}
-	return (out);
-}
-
 static int			isvalid(int c)
 {
 	return (c > ' ' || c <= '~');
@@ -116,4 +94,27 @@ int					get_vm(t_vm *out, t_mem mem, t_target target)
 	vm.target = target;
 	*out = vm;
 	return (0);
+}
+
+t_mem				get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu)
+{
+	u64				addr;
+	u64				size;
+	t_fat_arch		*fat_32;
+	t_fat_arch_64	*fat_64;
+
+	fat_32 = (t_fat_arch*)ptr;
+	fat_64 = (t_fat_arch_64*)ptr;
+	*cpu = s(fat_32->cputype, vm.is_swap);
+	if (vm.is_64)
+	{
+		addr = sl(fat_64->offset, vm.is_swap);
+		size = sl(fat_64->size, vm.is_swap);
+	}
+	else
+	{
+		addr = s(fat_32->offset, vm.is_swap);
+		size = s(fat_32->size, vm.is_swap);
+	}
+	return (get_sub_mem(vm.mem, addr, size));
 }

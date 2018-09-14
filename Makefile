@@ -12,7 +12,7 @@
 
 NAME = nm_otool
 
-SRC = tools.c nm_tools.c swap.c headers.c parsing.c types.c
+SRC = tools.c nm_tools.c swap.c headers.c parsing.c types.c ranlib.c
 
 INC = -Ilibft/includes -Iprintf/includes
 		

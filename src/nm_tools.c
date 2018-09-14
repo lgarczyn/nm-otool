@@ -12,7 +12,7 @@
 
 #include "nm_otool.h"
 
-static t_nlist_64	list_tolist64(t_nlist list)
+static t_nlist_64	list64(t_nlist list)
 {
 	t_nlist_64		out;
 
@@ -22,10 +22,10 @@ static t_nlist_64	list_tolist64(t_nlist list)
 	out.n_desc = list.n_desc;
 	out.n_value = list.n_value;
 
-	return out;
+	return (out);
 }
 
-static void			swap_symtab(t_sym_token *a, t_sym_token  *b)
+static void			swap_symtab(t_sym_token *a, t_sym_token *b)
 {
 	t_sym_token		tmp;
 
@@ -56,45 +56,39 @@ static void			sort_symtab(t_array *array)
 			c = ft_strcmp((char*)tokens[i].name, (char*)tokens[j].name);
 			if (c > 0 || (c == 0 && tokens[i].sym > tokens[j].sym))
 				swap_symtab(tokens + i, tokens + j);
-			/*else if (c == 0)
-			{
-				tokens[i].sym = NULL;
-				tokens[i].name = NULL;
-			}*/
 		}
 		i++;
 	}
 }
 
-//REMEMBER TO USE IS_SWAP
+//REMEMBER TO USE IS_SWAP AND CHECK STRINGS
 
 void				disp_symtab(t_vm vm, t_array *array, t_sect_types *types)
 {
-	t_sym_token		*tokens;
+	t_sym_token		*syms;
 	size_t			len;
-	size_t			i;
 	t_nlist_64		s;
 
 	sort_symtab(array);
-	tokens = (t_sym_token*)array->data;
+	syms = (t_sym_token*)array->data;
 	len = array->pos / sizeof(t_sym_token);
-	i = -1;
-	while (++i < len)
-		if (tokens[i].sym)
+	while (len--)
+		if (syms->sym)
 		{
-			s = vm.is_64 ? *tokens[i].sym : list_tolist64(*(t_nlist*)tokens[i].sym);
+			s = vm.is_64 ? *syms->sym : list64(*(t_nlist*)syms->sym);
 			s.n_type = get_sym_type(s, types);
 			if (s.n_type == 'z' || s.n_type == 'Z' || s.n_type == '?')
 				continue;
-			if (vm.cpu != CPU_TYPE_I386)
-				if (s.n_value || s.n_type == 'T')
-					print("%.16llx %c %s\n", s.n_value, s.n_type, tokens[i].name);
+			if (vm.cpu == CPU_TYPE_I386)
+				if (s.n_value && s.n_type != 'U' && s.n_type != 'u')
+					print("%.8llx %c %s\n", s.n_value, s.n_type, syms->name);
 				else
-					print("% 17 %c %s\n", s.n_type, tokens[i].name);
-			else if (s.n_value || s.n_type == 'T')
-				print("%.8llx %c %s\n", s.n_value, s.n_type, tokens[i].name);
+					print("% 9 %c %s\n", s.n_type, syms->name);
+			else if (s.n_value && s.n_type != 'U' && s.n_type != 'u')
+				print("%.16llx %c %s\n", s.n_value, s.n_type, syms->name);
 			else
-				print("% 9 %c %s\n", s.n_type, tokens[i].name);
+				print("% 17 %c %s\n", s.n_type, syms->name);
+			syms++;
 		}
 }
 
@@ -109,7 +103,8 @@ int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
 	array = (t_nlist*)(vm.mem.data + cmd.symoff);
 	array_64 = (t_nlist_64*)(vm.mem.data + cmd.symoff);
 	string_table = vm.mem.data + cmd.stroff;
-	CHECK_LEN(cmd.symoff + cmd.nsyms * (vm.is_64 ? sizeof(t_nlist_64) : sizeof(t_nlist)));
+	CHECK_LEN(cmd.symoff + cmd.nsyms *
+		(vm.is_64 ? sizeof(t_nlist_64) : sizeof(t_nlist)));
 	i = 0;
 	while (i < cmd.nsyms)
 	{
@@ -117,7 +112,8 @@ int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
 		if (token.sym->n_un.n_strx == 0)
 			print("lol test\n");
 		token.name = string_table + token.sym->n_un.n_strx;
-		CHECK(check_string(vm, token.name));
+		//if(check_string(vm, token.name))
+		//	token.name = (u8*)"OUT OF BOUNDS\n";
 		CHECK(array_push(tokens, &token, sizeof(token)));
 		i++;
 	}

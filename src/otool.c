@@ -62,5 +62,3 @@ int					main(int argc, char **argv)
 	ft_flush_buf();
 	return (errno);
 }
-
-
