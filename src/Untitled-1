@@ -1,0 +1,4 @@
+rm -rf /tmp/a /tmp/b /tmp/c /tmp/d
+for f in ${TEST} ; do ; ./ft_nm $f >> /tmp/a ; nm $f >> /tmp/b ; ./ft_otool $f >> /tmp/c ; otool -t $f >> /tmp/d ; done ;
+code --diff /tmp/a /tmp/b
+code --diff /tmp/c /tmp/d

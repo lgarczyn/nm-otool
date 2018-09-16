@@ -41,7 +41,9 @@ static void			sort_symtab(t_array *array)
 		while (++j < array->pos / sizeof(t_sym_token))
 		{
 			c = ft_strcmp((char*)tokens[i].name, (char*)tokens[j].name);
-			if (c > 0 || (c == 0 && tokens[i].sym > tokens[j].sym))
+			if (c == 0)
+				c = tokens[i].sym.n_value > tokens[j].sym.n_value;
+			if (c > 0)
 			{
 				tmp = tokens[i];
 				tokens[i] = tokens[j];
@@ -52,26 +54,6 @@ static void			sort_symtab(t_array *array)
 }
 
 //REMEMBER TO USE IS_SWAP AND CHECK STRINGS
-
-
-/*void				disp_symbol(t_vm vm, t_sym_token token, t_sect_types *types)
-{
-	t_nlist_64		s;
-
-	s = vm.is_64 ? *token.sym : list64(*(t_nlist*)token.sym);
-	s.n_type = get_sym_type(s, types);
-	if (s.n_type == 'z' || s.n_type == 'Z' || s.n_type == '?')
-		return ;
-	if (vm.is_64 == false)
-		if (s.n_value && s.n_type != 'U' && s.n_type != 'u')
-			print("%.8llx %c %s\n", s.n_value, s.n_type, token.name);
-		else
-			print("% 9 %c %s\n", s.n_type, token.name);
-	else if (s.n_value && s.n_type != 'U' && s.n_type != 'u')
-		print("%.16llx %c %s\n", s.n_value, s.n_type, token.name);
-	else
-		print("% 17 %c %s\n", s.n_type, token.name);
-}*/
 
 t_nlist_64			read_sym(t_vm vm, t_nlist_64 *sym)
 {
@@ -99,7 +81,7 @@ void				disp_symtab(t_vm vm, t_array *array, t_sect_types *types)
 	len = array->pos / sizeof(t_sym_token);
 	while (len--)
 	{
-		s = vm.is_64 ? *syms->sym : list64(*(t_nlist*)syms->sym);
+		s = syms->sym;
 		s.n_type = get_sym_type(s, types);
 		if (s.n_type != 'z' && s.n_type != 'Z' && s.n_type != '?')
 		{
@@ -133,12 +115,12 @@ int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
 	i = 0;
 	while (i < cmd.nsyms)
 	{
-		token.sym = vm.is_64 ? &array_64[i] : (t_nlist_64*)&array[i];
-		if (token.sym->n_un.n_strx == 0)
+		token.sym = vm.is_64 ? array_64[i] : list64(array[i]);
+		if (token.sym.n_un.n_strx == 0)
 			print("lol test\n");
-		token.name = string_table + token.sym->n_un.n_strx;
-		//if(check_string(vm, token.name))
-		//	token.name = (u8*)"OUT OF BOUNDS\n";
+		token.name = string_table + token.sym.n_un.n_strx;
+		if (check_string(vm, token.name))
+			token.name = (u8*)"OUT OF BOUNDS\n";
 		if (*token.name)
 			CHECK(array_push(tokens, &token, sizeof(token)));
 		i++;

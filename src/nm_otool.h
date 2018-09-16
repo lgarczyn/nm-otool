@@ -123,7 +123,7 @@ typedef struct				s_sect_types
 }							t_sect_types;
 
 typedef struct				s_sym_token {
-	t_nlist_64				*sym;
+	t_nlist_64				sym;
 	u8						*name;
 }							t_sym_token;
 
