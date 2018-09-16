@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/26 00:14:29 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/03/29 01:43:53 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/16 17:25:19 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,15 @@ u64					sl(u64 x, bool swap)
 	return (x);
 }
 
-void				swap_load(t_load_cmd *cmd, bool swap)
+t_load_cmd			read_load(void *ptr, bool swap)
 {
-	cmd->cmd = s(cmd->cmd, swap);
-	cmd->cmdsize = s(cmd->cmdsize, swap);
+	t_load_cmd		*cmd;
+	t_load_cmd		out;
+
+	cmd = (t_load_cmd*)ptr;
+	out.cmd = s(cmd->cmd, swap);
+	out.cmdsize = s(cmd->cmdsize, swap);
+	return (out);
 }
 
 t_seg_cmd_64		read_segment(void *p, bool swap, bool is64)
@@ -64,7 +69,7 @@ t_symtab_cmd		read_symtab_cmd(void *p, bool is_swap)
 	t_symtab_cmd	out;
 	t_symtab_cmd	*in;
 
-    in = (t_symtab_cmd*)p;
+	in = (t_symtab_cmd*)p;
 
 	out.symoff = s(in->symoff, is_swap);
 	out.nsyms = s(in->nsyms, is_swap);

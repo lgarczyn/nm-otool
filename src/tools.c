@@ -41,7 +41,7 @@ cpu_type_t			get_cpu_type(void)
 	size_t			size;
 
 	sysctlnametomib("hw.cputype", cpu, &size);
-	return (cpu[0]);
+	return ((cpu[0] + 1) | CPU_ARCH_ABI64);
 }
 
 int					check_string(t_vm vm, u8 *str)

@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:29:50 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/14 09:22:57 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/16 19:13:45 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,37 +35,6 @@ int					map(t_mem *out, char *filename)
 	out->size = st.st_size;
 	out->offset = 0;
 	close(fd);
-	return (0);
-}
-
-static int			isvalid(int c)
-{
-	return (c > ' ' || c <= '~');
-}
-
-int					check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out)
-{
-	u64				offset;
-	t_ar_header		*head;
-
-	CHECK_LEN(pos + sizeof(t_ar_header) + sizeof(u32));
-	head = (t_ar_header*)(vm.mem.data + pos);
-	offset = 0;
-	if (ft_strncmp("  `\n", head->end, 4) != 0)
-		return (1);
-	if (ft_strncmp("#1/", head->name, 3) == 0)
-	{
-		offset = ft_pure_atoi(head->name + 3);
-		CHECK(offset > 256);
-		CHECK_LEN(pos + sizeof(t_ar_header) + offset + sizeof(u32));
-		out->name = ft_strndupwhile(head->long_name, offset, &isvalid);
-	}
-	else
-	{
-		out->name = ft_strndupwhile(head->name, 16, &isvalid);
-	}
-	out->header_len = offset + sizeof(t_ar_header);
-	out->ncmds = GET_CHECKED_VAL(pos + offset + sizeof(t_ar_header), u32) / 8;
 	return (0);
 }
 

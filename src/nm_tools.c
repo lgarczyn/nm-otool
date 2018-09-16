@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/13 22:52:41 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/14 09:04:59 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/16 17:38:26 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,43 +25,68 @@ static t_nlist_64	list64(t_nlist list)
 	return (out);
 }
 
-static void			swap_symtab(t_sym_token *a, t_sym_token *b)
-{
-	t_sym_token		tmp;
-
-	tmp.sym = a->sym;
-	tmp.name = a->name;
-	a->sym = b->sym;
-	a->name = b->name;
-	b->sym = tmp.sym;
-	b->name = tmp.name;
-}
-
 static void			sort_symtab(t_array *array)
 {
 	t_sym_token		*tokens;
-	size_t			len;
 	size_t			i;
 	size_t			j;
 	int				c;
+	t_sym_token		tmp;
 
 	tokens = (t_sym_token*)array->data;
-	len = array->pos / sizeof(t_sym_token);
-	i = 0;
-	while (i < len)
+	i = -1;
+	while (++i < array->pos / sizeof(t_sym_token))
 	{
 		j = i;
-		while (++j < len)
+		while (++j < array->pos / sizeof(t_sym_token))
 		{
 			c = ft_strcmp((char*)tokens[i].name, (char*)tokens[j].name);
 			if (c > 0 || (c == 0 && tokens[i].sym > tokens[j].sym))
-				swap_symtab(tokens + i, tokens + j);
+			{
+				tmp = tokens[i];
+				tokens[i] = tokens[j];
+				tokens[j] = tmp;
+			}
 		}
-		i++;
 	}
 }
 
 //REMEMBER TO USE IS_SWAP AND CHECK STRINGS
+
+
+/*void				disp_symbol(t_vm vm, t_sym_token token, t_sect_types *types)
+{
+	t_nlist_64		s;
+
+	s = vm.is_64 ? *token.sym : list64(*(t_nlist*)token.sym);
+	s.n_type = get_sym_type(s, types);
+	if (s.n_type == 'z' || s.n_type == 'Z' || s.n_type == '?')
+		return ;
+	if (vm.is_64 == false)
+		if (s.n_value && s.n_type != 'U' && s.n_type != 'u')
+			print("%.8llx %c %s\n", s.n_value, s.n_type, token.name);
+		else
+			print("% 9 %c %s\n", s.n_type, token.name);
+	else if (s.n_value && s.n_type != 'U' && s.n_type != 'u')
+		print("%.16llx %c %s\n", s.n_value, s.n_type, token.name);
+	else
+		print("% 17 %c %s\n", s.n_type, token.name);
+}*/
+
+t_nlist_64			read_sym(t_vm vm, t_nlist_64 *sym)
+{
+	t_nlist_64		out;
+	t_nlist			*sym_32;
+
+	sym_32 = (t_nlist*)sym;
+	out.n_un.n_strx = s(sym->n_un.n_strx, vm.is_swap);
+	out.n_type = sym->n_type;
+	out.n_sect = sym->n_sect;
+	out.n_desc = sym->n_desc;
+	out.n_value = vm.is_64 ?
+		sl(sym->n_value, vm.is_swap) : s(sym_32->n_value, vm.is_swap);
+	return (out);
+}
 
 void				disp_symtab(t_vm vm, t_array *array, t_sect_types *types)
 {
@@ -73,23 +98,23 @@ void				disp_symtab(t_vm vm, t_array *array, t_sect_types *types)
 	syms = (t_sym_token*)array->data;
 	len = array->pos / sizeof(t_sym_token);
 	while (len--)
-		if (syms->sym)
+	{
+		s = vm.is_64 ? *syms->sym : list64(*(t_nlist*)syms->sym);
+		s.n_type = get_sym_type(s, types);
+		if (s.n_type != 'z' && s.n_type != 'Z' && s.n_type != '?')
 		{
-			s = vm.is_64 ? *syms->sym : list64(*(t_nlist*)syms->sym);
-			s.n_type = get_sym_type(s, types);
-			if (s.n_type == 'z' || s.n_type == 'Z' || s.n_type == '?')
-				continue;
-			if (vm.cpu == CPU_TYPE_I386)
-				if (s.n_value && s.n_type != 'U' && s.n_type != 'u')
-					print("%.8llx %c %s\n", s.n_value, s.n_type, syms->name);
+			if (vm.is_64)
+				if (s.n_type != 'U' && s.n_type != 'u')
+					print("%.16llx %c %s\n", s.n_value, s.n_type, syms->name);
 				else
-					print("% 9 %c %s\n", s.n_type, syms->name);
-			else if (s.n_value && s.n_type != 'U' && s.n_type != 'u')
-				print("%.16llx %c %s\n", s.n_value, s.n_type, syms->name);
+					print("% 17 %c %s\n", s.n_type, syms->name);
+			else if (s.n_type != 'U' && s.n_type != 'u')
+				print("%.8llx %c %s\n", s.n_value, s.n_type, syms->name);
 			else
-				print("% 17 %c %s\n", s.n_type, syms->name);
-			syms++;
+				print("% 9 %c %s\n", s.n_type, syms->name);
 		}
+		syms++;
+	}
 }
 
 int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
@@ -114,7 +139,8 @@ int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
 		token.name = string_table + token.sym->n_un.n_strx;
 		//if(check_string(vm, token.name))
 		//	token.name = (u8*)"OUT OF BOUNDS\n";
-		CHECK(array_push(tokens, &token, sizeof(token)));
+		if (*token.name)
+			CHECK(array_push(tokens, &token, sizeof(token)));
 		i++;
 	}
 	return (0);

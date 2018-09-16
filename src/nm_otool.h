@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/01/23 22:31:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/14 01:55:05 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/16 19:03:53 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,8 +104,8 @@ typedef struct				s_ar_header {
 }							t_ar_header;
 
 typedef struct				s_ar_info {
-	u32						ncmds;
 	u32						header_len;
+	u32						full_len;
 	char					*name;
 }							t_ar_info;
 
@@ -188,8 +188,8 @@ int							disp_ranlib(t_vm vm, char *file);
 u32							s(u32 x, bool is_swap);
 u64							sl(u64 x, bool is_swap);
 void						swap_header(t_mach_header *header, bool is_swap);
-void						swap_load(t_load_cmd *cmd, bool is_swap);
 
+t_load_cmd					read_load(void *cmd, bool is_swap);
 t_dysymtab_cmd				read_dysymtab_cmd(void *p, bool is_swap);
 t_symtab_cmd				read_symtab_cmd(void *p, bool is_swap);
 t_seg_cmd_64				read_segment(void *p, bool is_swap, bool is_64);

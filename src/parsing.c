@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/13 22:44:27 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/09/14 09:36:31 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/09/16 18:12:34 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,24 +46,24 @@ int					disp_segment(t_vm vm, u64 offset, u32 *sect_size)
 {
 	t_seg_cmd_64	seg;
 	t_symtab_cmd	sym;
-	t_load_cmd		*c;
+	t_load_cmd		c;
+	t_load_cmd		*cmd;
 
-	CHECK_LEN(offset + sizeof(t_load_cmd));
-	c = (t_load_cmd*)(vm.mem.data + offset);
-	CHECK(c->cmdsize == 0);
-	*sect_size = c->cmdsize;
-	swap_load(c, vm.is_swap);
-	if (c->cmd == LC_SEGMENT_64 || c->cmd == LC_SEGMENT)
+	cmd = (t_load_cmd*)GET_CHECKED_PTR(offset, sizeof(t_load_cmd));
+	c = read_load(cmd, vm.is_swap);
+	CHECK(c.cmdsize == 0);
+	*sect_size = c.cmdsize;
+	if (c.cmd == LC_SEGMENT_64 || c.cmd == LC_SEGMENT)
 	{
 		offset += vm.is_64 ? sizeof(t_seg_cmd_64) : sizeof(t_seg_cmd_32);
 		CHECK_LEN(offset);
-		seg = read_segment(c, vm.is_swap, vm.is_64);
+		seg = read_segment(cmd, vm.is_swap, vm.is_64);
 		CHECK(disp_sections(vm, offset, seg.nsects));
 	}
-	else if (vm.target.is_otool == false && c->cmd == LC_SYMTAB)
+	else if (vm.target.is_otool == false && c.cmd == LC_SYMTAB)
 	{
 		CHECK_LEN(offset + sizeof(t_symtab_cmd));
-		sym = read_symtab_cmd(c, vm.is_swap);
+		sym = read_symtab_cmd(cmd, vm.is_swap);
 		CHECK(store_symtab(vm, sym, vm.sym_tokens));
 	}
 	return (0);
@@ -84,7 +84,7 @@ int					disp_object(t_vm vm, char *file, char *ar, bool disp_cpu)
 	if (disp_cpu)
 		print("%s (architecture %s):\n", file, get_cpu(vm.cpu));
 	else if (ar)
-		print("%s(%s):\n", ar, file);
+		print("\n%s(%s):\n", ar, file);
 	else if (vm.target.disp_names)
 		print("%s%s:\n", vm.target.is_otool ? "" : "\n", file);
 	offset = vm.is_64 ? sizeof(t_mach_header_64) : sizeof(t_mach_header);
@@ -112,7 +112,7 @@ int					disp_fat(t_vm vm, char *file, bool all)
 	while (++i < vm.ncmds)
 	{
 		archmem = get_arch_map(vm, ptr, &cpu);
-		if ((~CPU_ARCH_MASK & cpu) == get_cpu_type() + 1 || all)
+		if (cpu == 0x1000007 || all)
 		{
 			CHECK(get_vm(&archvm, archmem, vm.target));
 			CHECK(disp_object(archvm, file, NULL, vm.ncmds > 1 && all));

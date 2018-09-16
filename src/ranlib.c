@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ranlib.c                                          :+:      :+:    :+:   */
+/*   ranlib.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -11,6 +11,37 @@
 /* ************************************************************************** */
 
 #include "nm_otool.h"
+
+static int			isvalid(int c)
+{
+	return (c > ' ' || c <= '~');
+}
+
+int			check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out)
+{
+	u64				offset;
+	t_ar_header		*head;
+
+	CHECK_LEN(pos + sizeof(t_ar_header) + sizeof(u32));
+	head = (t_ar_header*)(vm.mem.data + pos);
+	offset = 0;
+	if (ft_strncmp("  `\n", head->end, 4) != 0)
+		return (1);
+	if (ft_strncmp("#1/", head->name, 3) == 0)
+	{
+		offset = ft_pure_atoi(head->name + 3);
+		CHECK(offset > 256);
+		CHECK_LEN(pos + sizeof(t_ar_header) + offset + sizeof(u32));
+		out->name = ft_strndupwhile(head->long_name, offset, &isvalid);
+	}
+	else
+	{
+		out->name = ft_strndupwhile(head->name, 16, &isvalid);
+	}
+	out->header_len = offset + sizeof(t_ar_header);
+	out->full_len = ft_pure_atoi(head->size) + sizeof(t_ar_header);
+	return (0);
+}
 
 static int			disp_ranlib_child(t_vm vm, u64 offset, char *ar, char *file)
 {
@@ -23,28 +54,25 @@ static int			disp_ranlib_child(t_vm vm, u64 offset, char *ar, char *file)
 int					disp_ranlib(t_vm vm, char *file)
 {
 	u64				offset;
-	t_symdef		*sym;
-	u32				i;
+	t_array			array;
 	t_ar_info		info;
 
+	bzero(&array, sizeof(array));
 	offset = 8 + vm.ar_info.header_len;
+	if (vm.target.is_otool == false)
 	print("Archive : %s\n", file);
 	if (ft_strncmp(vm.ar_info.name, "__.SYMDEF", 9) == 0)
 	{
-		sym = (t_symdef*)GET_CHECKED_PTR(
-			offset + sizeof(u32),
-			vm.ar_info.ncmds * sizeof(t_symdef));
-		i = 0;
-		while (i < vm.ar_info.ncmds)
+		offset += GET_CHECKED_VAL(offset, u32) + sizeof(u32);
+		offset += GET_CHECKED_VAL(offset, u32) + sizeof(u32);
+		while (offset < vm.mem.size)
 		{
-			CHECK(check_ranlib_header(vm, sym[i].object, &info));
-			CHECK(disp_ranlib_child(vm, sym[i].object + info.header_len,
-				info.name, file));
-			i++;
-			(void)file;
+			CHECK(check_ranlib_header(vm, offset, &info));
+			CHECK(disp_ranlib_child(vm, offset + info.header_len, info.name, file));
+			offset += info.full_len;
 		}
 	}
 	else
-		disp_ranlib_child(vm, offset, vm.ar_info.name, file);
+		CHECK(disp_ranlib_child(vm, offset, vm.ar_info.name, file));
 	return (0);
 }
