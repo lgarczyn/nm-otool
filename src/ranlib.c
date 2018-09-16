@@ -59,8 +59,8 @@ int					disp_ranlib(t_vm vm, char *file)
 
 	bzero(&array, sizeof(array));
 	offset = 8 + vm.ar_info.header_len;
-	if (vm.target.is_otool == false)
-	print("Archive : %s\n", file);
+	if (vm.target.is_otool == true)
+		print("Archive : %s\n", file);
 	if (ft_strncmp(vm.ar_info.name, "__.SYMDEF", 9) == 0)
 	{
 		offset += GET_CHECKED_VAL(offset, u32) + sizeof(u32);

@@ -51,7 +51,8 @@ int					check_string(t_vm vm, u8 *str)
 	x = 0;
 	while (1)
 	{
-		if (str >= vm.mem.file + vm.mem.size || str < vm.mem.file)
+		if (str >= vm.mem.file + vm.mem.offset + vm.mem.size ||
+			str < vm.mem.file)
 		{
 			printerr("bad string %p after %i\n", str - (u64)vm.mem.file, x);
 			return (EINVAL);

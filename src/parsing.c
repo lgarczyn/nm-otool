@@ -84,7 +84,7 @@ int					disp_object(t_vm vm, char *file, char *ar, bool disp_cpu)
 	if (disp_cpu)
 		print("%s (architecture %s):\n", file, get_cpu(vm.cpu));
 	else if (ar)
-		print("\n%s(%s):\n", ar, file);
+		print("%s%s(%s):\n", vm.target.is_otool ? "" : "\n", ar, file);
 	else if (vm.target.disp_names)
 		print("%s%s:\n", vm.target.is_otool ? "" : "\n", file);
 	offset = vm.is_64 ? sizeof(t_mach_header_64) : sizeof(t_mach_header);
