@@ -35,14 +35,28 @@ static void			putdata(t_vm *vm, u8 *data, size_t size, size_t addr)
 		print("\n");
 }
 
-static int			otool_filter(int r, char *file)
+static int			otool_filter(char *p, char *file, int r)
 {
+	if (r == 1)
+		return (1);
 	if (r == ERR_MAGIC)
 	{
 		print("%s: is not an object file\n", file);
-		return (0);
+		return (1);
 	}
-	return (r);
+	return (gen_filter(r, p, file));
+}
+
+static t_target		get_otool_target(void)
+{
+	t_target		target;
+
+	target.segment = SEG_TEXT;
+	target.section = SECT_TEXT;
+	target.display = &putdata;
+	target.disp_names = true;
+	target.is_otool = true;
+	return (target);
 }
 
 int					main(int argc, char **argv)
@@ -51,25 +65,23 @@ int					main(int argc, char **argv)
 	t_mem			mem;
 	t_target		target;
 
-	target.segment = SEG_TEXT;
-	target.section = SECT_TEXT;
-	target.display = &putdata;
-	target.is_otool = true;
+	target = get_otool_target();
 	ft_buf(malloc(4096), 4096, 1);
 	if (argc == 1)
 	{
 		argc = 2;
 		argv[1] = "a.out";
 	}
-	target.disp_names = true;
 	i = 0;
 	while (++i < argc)
 	{
-		CHECK_SKIP(argv[0], argv[i], map(&mem, argv[i]));
-		CHECK_DISP(argv[0], argv[i], otool_filter(
-			disp_file(mem, target, argv[i], NULL), argv[i]));
-		CHECK_DISP(argv[0], argv[1], munmap(mem.data, mem.size));
+		if (otool_filter(argv[0], argv[i], map(&mem, argv[i])))
+			return (1);
+		if (otool_filter(argv[0], argv[i], disp_file(mem, target, argv[i], 0)))
+			return (1);
+		if (otool_filter(argv[0], argv[1], munmap(mem.data, mem.size)))
+			return (1);
 	}
 	ft_flush_buf();
-	return (errno);
+	return (OK);
 }

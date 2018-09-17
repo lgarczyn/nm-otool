@@ -12,7 +12,7 @@
 
 NAME = nm_otool
 
-SRC = tools.c nm_tools.c swap.c headers.c parsing.c types.c ranlib.c
+SRC = tools.c nm_disp.c swap.c headers.c parsing.c types.c ranlib.c read.c
 
 INC = -Ilibft/includes -Iprintf/includes
 		
@@ -24,7 +24,7 @@ DEB = -g3 -fsanitize=address
 
 OPT = -O3
 
-FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT)
+FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT) #$(DEB)
 
 all: $(NAME)
 

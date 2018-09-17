@@ -99,7 +99,7 @@ char				*ft_strchr(const char *s, int c);
 char				*ft_strcpy(char *dst, const char *src);
 char				*ft_strdup(const char *s1);
 char				*ft_strndup(const char *s1, int len);
-char				*ft_strndupwhile(const char *m, size_t n, int (*pred)(int c));
+char				*ft_strndupwhile(const char *m, size_t n, int (*p)(int c));
 char				*ft_strdupwhile(const char *m, int (*pred)(int c));
 char				*ft_strjoin(char const *s1, char const *s2);
 char				*ft_strmap(char const *s, char (*f)(char));

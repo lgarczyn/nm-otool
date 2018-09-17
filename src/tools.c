@@ -27,12 +27,7 @@ int					array_push(t_array *array, void *data, size_t size)
 	}
 	ft_memcpy(array->data + array->pos, data, size);
 	array->pos = new_pos;
-	return (0);
-}
-
-void				sect_type_push(t_sect_types *stypes, char *sectname)
-{
-	stypes->data[(stypes->pos)++] = get_sect_type(sectname);
+	return (OK);
 }
 
 cpu_type_t			get_cpu_type(void)
@@ -58,7 +53,7 @@ int					check_string(t_vm vm, u8 *str)
 			return (ERR_MEM);
 		}
 		if (*str == 0)
-			return (0);
+			return (OK);
 		str++;
 		x++;
 	}
@@ -88,10 +83,16 @@ t_mem				get_sub_mem(t_mem mem, u64 offset, u64 size)
 
 int					gen_filter(int r, char *p, char *f)
 {
+	if (r == 1)
+		return (1);
 	if (r == ERR_MEM)
 	{
-		print("%s: %s: truncated or malformed object\n", p, f);
-		return (0);
+		printerr("%s: %s: truncated or malformed object.\n", p, f);
+		return (1);
+	}
+	if (r)
+	{
+		printerr("%s: %s: %s.", p, f, ft_strerror(r));
 	}
 	return (r);
 }

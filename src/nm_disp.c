@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   nm_tools.c                                         :+:      :+:    :+:   */
+/*   nm_disp.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -21,7 +21,6 @@ static t_nlist_64	list64(t_nlist list)
 	out.n_sect = list.n_sect;
 	out.n_desc = list.n_desc;
 	out.n_value = list.n_value;
-
 	return (out);
 }
 
@@ -53,8 +52,6 @@ static void			sort_symtab(t_array *array)
 	}
 }
 
-//REMEMBER TO USE IS_SWAP AND CHECK STRINGS
-
 t_nlist_64			read_sym(t_vm vm, t_nlist_64 *sym)
 {
 	t_nlist_64		out;
@@ -70,19 +67,19 @@ t_nlist_64			read_sym(t_vm vm, t_nlist_64 *sym)
 	return (out);
 }
 
-void				disp_symtab(t_vm vm, t_array *array, t_sect_types *types)
+void				disp_symtab(t_vm vm, t_array *symtab, t_array *sect_types)
 {
 	t_sym_token		*syms;
 	size_t			len;
 	t_nlist_64		s;
 
-	sort_symtab(array);
-	syms = (t_sym_token*)array->data;
-	len = array->pos / sizeof(t_sym_token);
+	sort_symtab(symtab);
+	syms = (t_sym_token*)symtab->data;
+	len = symtab->pos / sizeof(t_sym_token);
 	while (len--)
 	{
 		s = syms->sym;
-		s.n_type = get_sym_type(s, types);
+		s.n_type = get_sym_type(s, sect_types);
 		if (s.n_type != 'z' && s.n_type != 'Z' && s.n_type != '?')
 		{
 			if (vm.is_64)
@@ -125,5 +122,5 @@ int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
 			CHECK(array_push(tokens, &token, sizeof(token)));
 		i++;
 	}
-	return (0);
+	return (OK);
 }

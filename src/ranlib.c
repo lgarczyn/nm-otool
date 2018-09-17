@@ -17,7 +17,7 @@ static int			isvalid(int c)
 	return (c > ' ' || c <= '~');
 }
 
-int			check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out)
+int					check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out)
 {
 	u64				offset;
 	t_ar_header		*head;
@@ -40,15 +40,15 @@ int			check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out)
 	}
 	out->header_len = offset + sizeof(t_ar_header);
 	out->full_len = ft_pure_atoi(head->size) + sizeof(t_ar_header);
-	return (0);
+	return (OK);
 }
 
-static int			disp_ranlib_child(t_vm vm, u64 offset, char *ar, char *file)
+static int			disp_child(t_vm vm, u64 offset, char *ar, char *file)
 {
 	CHECK(disp_file(
 		get_sub_mem(vm.mem, offset, vm.mem.size),
 		vm.target, ar, file));
-	return (0);
+	return (OK);
 }
 
 int					disp_ranlib(t_vm vm, char *file)
@@ -68,11 +68,11 @@ int					disp_ranlib(t_vm vm, char *file)
 		while (offset < vm.mem.size)
 		{
 			CHECK(check_ranlib_header(vm, offset, &info));
-			CHECK(disp_ranlib_child(vm, offset + info.header_len, info.name, file));
+			CHECK(disp_child(vm, offset + info.header_len, info.name, file));
 			offset += info.full_len;
 		}
 	}
 	else
-		CHECK(disp_ranlib_child(vm, offset, vm.ar_info.name, file));
-	return (0);
+		CHECK(disp_child(vm, offset, vm.ar_info.name, file));
+	return (OK);
 }

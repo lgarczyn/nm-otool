@@ -35,7 +35,7 @@ int					map(t_mem *out, char *filename)
 	out->size = st.st_size;
 	out->offset = 0;
 	close(fd);
-	return (0);
+	return (OK);
 }
 
 int					get_vm(t_vm *out, t_mem mem, t_target target)
@@ -62,7 +62,7 @@ int					get_vm(t_vm *out, t_mem mem, t_target target)
 	vm.ncmds = s(vm.ncmds, vm.is_swap);
 	vm.target = target;
 	*out = vm;
-	return (0);
+	return (OK);
 }
 
 t_mem				get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu)

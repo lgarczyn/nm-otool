@@ -24,7 +24,7 @@ char				get_sect_type(char *name)
 		return ('S');
 }
 
-char				get_sym_type(t_nlist_64 sym, t_sect_types *types)
+char				get_sym_type(t_nlist_64 sym, t_array *stypes)
 {
 	char			ret;
 
@@ -41,7 +41,8 @@ char				get_sym_type(t_nlist_64 sym, t_sect_types *types)
 	else if ((sym.n_type & N_TYPE) == N_PBUD)
 		ret = 'U';
 	else if ((sym.n_type & N_TYPE) == N_SECT)
-		ret = types->data[sym.n_sect - 1];
+		ret = ((char*)stypes->data)[
+			MAX(sym.n_sect - 1, stypes->pos)];
 	else if ((sym.n_type & N_TYPE) == N_INDR)
 		ret = 'I';
 	if ((sym.n_type & N_STAB) != 0)
@@ -68,10 +69,11 @@ t_ftype				get_type(void *p, bool *is_swap, bool *is_64)
 	if (ft_strncmp("!<arch>\n", (char*)p, 8) == 0)
 		return (f_ranlib);
 	f = (char*)p;
-	printerr("UNKOWN_TYPE: %X%X%X%X%X%X%X%X%X%X%X%X%X%X%X%X '%.16s'\n",
-		f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7],
-		f[8], f[9], f[10], f[11], f[12], f[13], f[14], f[15],
-		f);
+	if (DEBUG)
+		printerr("UNKNOWN_TYPE: %X%X%X%X%X%X%X%X%X%X%X%X%X%X%X%X '%.16s'\n",
+			f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7],
+			f[8], f[9], f[10], f[11], f[12], f[13], f[14], f[15],
+			f);
 	return (f_err);
 }
 

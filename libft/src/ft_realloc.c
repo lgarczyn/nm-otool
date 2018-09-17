@@ -58,6 +58,7 @@ int				ft_realloc_double(void **ptr, size_t *old_size)
 	*old_size = new_size;
 	return (0);
 }
+
 int				ft_realloc_array(t_array *array)
 {
 	return (ft_realloc_double(&array->data, &array->size));

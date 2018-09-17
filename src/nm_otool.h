@@ -74,126 +74,117 @@ typedef struct fat_arch_64					t_fat_arch_64;
 typedef struct nlist						t_nlist;
 typedef struct nlist_64						t_nlist_64;
 
-typedef struct				s_symdef {
-	u32						name;
-	u32						object;
-}							t_symdef;
+typedef struct		s_symdef {
+	u32				name;
+	u32				object;
+}					t_symdef;
 
-typedef union				u_cmd {
-	u32						cmd;
-	t_load_cmd				load;
-	t_seg_cmd_32			name;
-	t_seg_cmd_32			seg32;
-	t_seg_cmd_64			seg64;
-	t_fvmlib_cmd			fvmlib;
-	t_dylib_cmd				dylib;
-}							t_cmd;
+typedef union		u_cmd {
+	u32				cmd;
+	t_load_cmd		load;
+	t_seg_cmd_32	name;
+	t_seg_cmd_32	seg32;
+	t_seg_cmd_64	seg64;
+	t_fvmlib_cmd	fvmlib;
+	t_dylib_cmd		dylib;
+}					t_cmd;
 
-# define AR_START			"!<arch>\n"
-# define AR_END				"  `\n"
+# define AR_START	"!<arch>\n"
+# define AR_END		"  `\n"
 
-typedef struct				s_ar_header {
-	char					name[16];
-	char					date[12];
-	char					uid[6];
-	char					gid[6];
-	char					mode[8];
-	char					size[8];
-	char					end[4];
-	char					long_name[0];
-}							t_ar_header;
+typedef struct		s_ar_header {
+	char			name[16];
+	char			date[12];
+	char			uid[6];
+	char			gid[6];
+	char			mode[8];
+	char			size[8];
+	char			end[4];
+	char			long_name[0];
+}					t_ar_header;
 
-typedef struct				s_ar_info {
-	u32						header_len;
-	u32						full_len;
-	char					*name;
-}							t_ar_info;
+typedef struct		s_ar_info {
+	u32				header_len;
+	u32				full_len;
+	char			*name;
+}					t_ar_info;
 
-typedef struct				s_mem {
-	u8						*data;
-	u64						size;
-	u8						*file;
-	u64						offset;
-}							t_mem;
+typedef struct		s_mem {
+	u8				*data;
+	u64				size;
+	u8				*file;
+	u64				offset;
+}					t_mem;
 
-typedef struct				s_sect_types
-{
-	char					data[MAX_SECT + 1];
-	size_t					pos;
-}							t_sect_types;
-
-typedef struct				s_sym_token {
-	t_nlist_64				sym;
-	u8						*name;
-}							t_sym_token;
-
-
+typedef struct		s_sym_token {
+	t_nlist_64		sym;
+	u8				*name;
+}					t_sym_token;
 
 struct s_vm;
 
-typedef struct				s_target {
-	int						disp_names;
-	bool					is_otool;
-	char					*segment;
-	char					*section;
-	void					(*display)(struct s_vm *vm, u8 *data, size_t size, size_t addr);
-}							t_target;
+typedef struct		s_target {
+	int				disp_names;
+	bool			is_otool;
+	char			*segment;
+	char			*section;
+	void			(*display)(struct s_vm *vm, u8 *d, size_t s, size_t a);
+}					t_target;
 
-typedef enum				e_ftype {
+typedef enum		e_ftype {
 	f_err = 0,
 	f_object = 1,
 	f_fat = 2,
 	f_ranlib = 3,
-}							t_ftype;
+}					t_ftype;
 
-typedef struct				s_vm {
-	t_mem					mem;
-	t_ftype					type;
-	t_target				target;
-	cpu_type_t				cpu;
-	u32						ncmds;
-	t_ar_info				ar_info;
-	bool					is_swap;
-	bool					is_64;
+typedef struct		s_vm {
+	t_mem			mem;
+	t_ftype			type;
+	t_target		target;
+	cpu_type_t		cpu;
+	u32				ncmds;
+	t_ar_info		ar_info;
+	bool			is_swap;
+	bool			is_64;
 
-	t_sect_types			*sect_types;
-	t_array					*sym_tokens;
-}							t_vm;
+	t_array			*sect_types;
+	t_array			*sym_tokens;
+}					t_vm;
 
-int							map(t_mem *out, char *filename);
-int							get_vm(t_vm *f, t_mem mem, t_target target);
-int							check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out);
-t_mem						get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu);
+int					map(t_mem *out, char *filename);
+int					get_vm(t_vm *f, t_mem mem, t_target target);
+int					check_ranlib_header(t_vm vm, u64 pos, t_ar_info *out);
+t_mem				get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu);
 
-t_mem						get_sub_mem(t_mem mem, u64 offset, u64 size);
-int							check_string(t_vm vm, u8 *str);
-int							array_push(t_array *array, void *data, size_t size);
-void						sect_type_push(t_sect_types *stypes, char *sectname);
-cpu_type_t					get_cpu_type(void);
+t_mem				get_sub_mem(t_mem mem, u64 offset, u64 size);
+int					check_string(t_vm vm, u8 *str);
+int					array_push(t_array *array, void *data, size_t size);
+void				sect_type_push(t_array *stypes, char *sectname);
+cpu_type_t			get_cpu_type(void);
 
-char						get_sect_type(char *name);
-char						get_sym_type(t_nlist_64 sym, t_sect_types *types);
-t_ftype						get_type(void *p, bool *is_swap, bool *is_64);
-const char					*get_cpu(cpu_type_t cpu);
+char				get_sect_type(char *name);
+char				get_sym_type(t_nlist_64 sym, t_array *stypes);
+t_ftype				get_type(void *p, bool *is_swap, bool *is_64);
+const char			*get_cpu(cpu_type_t cpu);
 
-void						disp_symtab(t_vm vm, t_array *array, t_sect_types *types);
-int							store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens);
+void				disp_symtab(t_vm vm, t_array *sym, t_array *types);
+int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens);
 
-int							disp_file(t_mem mem, t_target target, char *file, char *ar);
-int							disp_ranlib(t_vm vm, char *file);
+int					disp_file(t_mem mem, t_target target, char *file, char *ar);
+int					disp_ranlib(t_vm vm, char *file);
 
+u32					s(u32 x, bool is_swap);
+u64					sl(u64 x, bool is_swap);
+void				swap_header(t_mach_header *header, bool is_swap);
 
-u32							s(u32 x, bool is_swap);
-u64							sl(u64 x, bool is_swap);
-void						swap_header(t_mach_header *header, bool is_swap);
+t_load_cmd			read_load(void *cmd, bool is_swap);
+t_dysymtab_cmd		read_dysymtab_cmd(void *p, bool is_swap);
+t_symtab_cmd		read_symtab_cmd(void *p, bool is_swap);
+t_seg_cmd_64		read_segment(void *p, bool is_swap, bool is_64);
+t_section_64		read_section(void *p, bool is_swap, bool is_64);
 
-t_load_cmd					read_load(void *cmd, bool is_swap);
-t_dysymtab_cmd				read_dysymtab_cmd(void *p, bool is_swap);
-t_symtab_cmd				read_symtab_cmd(void *p, bool is_swap);
-t_seg_cmd_64				read_segment(void *p, bool is_swap, bool is_64);
-t_section_64				read_section(void *p, bool is_swap, bool is_64);
-
-int							gen_filter(int r, char *p, char *f);
+int					gen_filter(int r, char *p, char *f);
 
 # define OK 0
 # define ERR_MAGIC 132
@@ -203,10 +194,12 @@ int							gen_filter(int r, char *p, char *f);
 # define WRAP_C(T) if (1) { T } else { }
 # define BREAK WRAP( return(ERR_MEM); )
 
-# ifdef DEBUG
+# define DEBUG false
+
+# if (DEBUG)
 #  define L() WRAP(printerr(" %s:%i\n", __FILE__, __LINE__);)
 #  define PRINT_L(l) WRAP(printerr("%llu > %llu", (u64)l, vm.mem.size); L();)
-#  define PRINT_R(r) WRAP(printerr("ERR = %llu", (u64)l); L();)
+#  define PRINT_R(r) WRAP(printerr("ERR = %llu", (u64)r); L();)
 #  define PRINT_F(p, f, r) WRAP(printerr("%s: %s: %s\n", p, f, ft_strerror(r));)
 #  define CHECK_LEN(l) WRAP(if (l > vm.mem.size) { PRINT_L(l); BREAK; })
 #  define CHECK(t) WRAP(int r = t; if (r) {PRINT_R(r); return(r);})
@@ -216,11 +209,7 @@ int							gen_filter(int r, char *p, char *f);
 #  define CHECK(t) WRAP(int r = t; if (r) {return(r);})
 # endif
 
-
 # define GET_CHECKED_PTR(o, l) ({CHECK_LEN(o+l); vm.mem.data+o;})
 # define GET_CHECKED_VAL(o, t) *(t*)({CHECK_LEN(o+sizeof(t)); vm.mem.data+o;})
-
-# define CHECK_SKIP(p, f, t) WRAP_C(int r = t; if (gen_filter(r, p, f)) {PRINT_F(p, f, r); continue;})
-# define CHECK_DISP(p, f, t) WRAP(int r = t; if (gen_filter(r, p, f)) {PRINT_F(p, f, r); })
 
 #endif

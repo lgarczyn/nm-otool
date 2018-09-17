@@ -18,14 +18,16 @@ int					disp_sections(t_vm vm, u64 offset, u64 n)
 {
 	t_section_64	sec;
 	u64				i;
+	char			t;
 
-	i = 0;
 	CHECK_LEN(offset +
 		n * (vm.is_64 ? sizeof(t_section_64) : sizeof(t_section_32)));
-	while (i < n)
+	i = -1;
+	while (++i < n)
 	{
 		sec = read_section(&vm.mem.data[offset], vm.is_swap, vm.is_64);
-		sect_type_push(vm.sect_types, sec.sectname);
+		t = get_sect_type(sec.sectname);
+		array_push(vm.sect_types, &t, sizeof(char));
 		if (vm.target.is_otool &&
 			ft_strcmp(sec.sectname, vm.target.section) == 0 &&
 			ft_strcmp(sec.segname, vm.target.segment) == 0)
@@ -37,9 +39,8 @@ int					disp_sections(t_vm vm, u64 offset, u64 n)
 				sec.size, sec.addr);
 		}
 		offset += vm.is_64 ? sizeof(t_section_64) : sizeof(t_section_32);
-		i++;
 	}
-	return (0);
+	return (OK);
 }
 
 int					disp_segment(t_vm vm, u64 offset, u32 *sect_size)
@@ -66,20 +67,20 @@ int					disp_segment(t_vm vm, u64 offset, u32 *sect_size)
 		sym = read_symtab_cmd(cmd, vm.is_swap);
 		CHECK(store_symtab(vm, sym, vm.sym_tokens));
 	}
-	return (0);
+	return (OK);
 }
 
 int					disp_object(t_vm vm, char *file, char *ar, bool disp_cpu)
 {
 	u64				offset;
 	u32				i;
-	t_sect_types	sect_types;
+	t_array			sect_types;
 	t_array			sym_tokens;
 	u32				sect_size;
 
 	vm.sect_types = &sect_types;
 	vm.sym_tokens = &sym_tokens;
-	bzero(&sect_types, sizeof(t_sect_types));
+	bzero(&sect_types, sizeof(t_array));
 	bzero(&sym_tokens, sizeof(t_array));
 	if (disp_cpu)
 		print("%s (architecture %s):\n", file, get_cpu(vm.cpu));
@@ -95,7 +96,7 @@ int					disp_object(t_vm vm, char *file, char *ar, bool disp_cpu)
 		offset += sect_size;
 	}
 	disp_symtab(vm, &sym_tokens, &sect_types);
-	return (0);
+	return (OK);
 }
 
 int					disp_fat(t_vm vm, char *file, bool all)
@@ -117,13 +118,13 @@ int					disp_fat(t_vm vm, char *file, bool all)
 			CHECK(get_vm(&archvm, archmem, vm.target));
 			CHECK(disp_object(archvm, file, NULL, vm.ncmds > 1 && all));
 			if (all == false)
-				return (0);
+				return (OK);
 		}
 		ptr += vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch);
 	}
 	if (all == false)
 		return (disp_fat(vm, file, true));
-	return (0);
+	return (OK);
 }
 
 int					disp_file(t_mem mem, t_target target, char *file, char *ar)
@@ -137,5 +138,5 @@ int					disp_file(t_mem mem, t_target target, char *file, char *ar)
 		CHECK(disp_ranlib(vm, file));
 	else
 		CHECK(disp_object(vm, file, ar, false));
-	return (0);
+	return (OK);
 }
