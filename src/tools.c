@@ -55,7 +55,7 @@ int					check_string(t_vm vm, u8 *str)
 			str < vm.mem.file)
 		{
 			printerr("bad string %p after %i\n", str - (u64)vm.mem.file, x);
-			return (EINVAL);
+			return (ERR_MEM);
 		}
 		if (*str == 0)
 			return (0);
@@ -84,4 +84,14 @@ t_mem				get_sub_mem(t_mem mem, u64 offset, u64 size)
 		print("WTF\n");
 	}
 	return (out);
+}
+
+int					gen_filter(int r, char *p, char *f)
+{
+	if (r == ERR_MEM)
+	{
+		print("%s: %s: truncated or malformed object\n", p, f);
+		return (0);
+	}
+	return (r);
 }

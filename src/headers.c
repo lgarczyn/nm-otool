@@ -27,7 +27,7 @@ int					map(t_mem *out, char *filename)
 	if (fd < 0)
 		return (errno);
 	if (st.st_size == 0)
-		return (EINVAL);
+		return (ERR_MAGIC);
 	out->data = mmap(0, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
 	if (out->data == NULL || out->data == (u8*)-1)
 		return (errno);
@@ -57,7 +57,7 @@ int					get_vm(t_vm *out, t_mem mem, t_target target)
 	else if (vm.type == f_object)
 		vm.ncmds = mach_header->ncmds;
 	else
-		return (EINVAL);
+		return (ERR_MAGIC);
 	vm.cpu = vm.type == f_object ? s(mach_header->cputype, vm.is_swap) : 0;
 	vm.ncmds = s(vm.ncmds, vm.is_swap);
 	vm.target = target;

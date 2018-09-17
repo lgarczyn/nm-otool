@@ -20,11 +20,11 @@ OBJ = $(addprefix obj/, $(addsuffix .o, $(basename $(SRC))))
 
 LIB = -L libft -lft -L printf -lftprintf
 
-DEB = -g3 -fsanitize=address
+DEB = -g3 -fsanitize=address 
 
-OPT = -O0
+OPT = -O3
 
-FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT) -g $(DEB)
+FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT)
 
 all: $(NAME)
 

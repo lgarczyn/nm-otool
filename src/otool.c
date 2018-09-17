@@ -35,6 +35,16 @@ static void			putdata(t_vm *vm, u8 *data, size_t size, size_t addr)
 		print("\n");
 }
 
+static int			otool_filter(int r, char *file)
+{
+	if (r == ERR_MAGIC)
+	{
+		print("%s: is not an object file\n", file);
+		return (0);
+	}
+	return (r);
+}
+
 int					main(int argc, char **argv)
 {
 	int				i;
@@ -55,9 +65,10 @@ int					main(int argc, char **argv)
 	i = 0;
 	while (++i < argc)
 	{
-		CHECK_SKIP(argv[i], map(&mem, argv[i]));
-		CHECK_DISP(argv[i], disp_file(mem, target, argv[i], NULL));
-		munmap(mem.data, mem.size);
+		CHECK_SKIP(argv[0], argv[i], map(&mem, argv[i]));
+		CHECK_DISP(argv[0], argv[i], otool_filter(
+			disp_file(mem, target, argv[i], NULL), argv[i]));
+		CHECK_DISP(argv[0], argv[1], munmap(mem.data, mem.size));
 	}
 	ft_flush_buf();
 	return (errno);

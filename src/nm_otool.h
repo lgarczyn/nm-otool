@@ -71,8 +71,8 @@ typedef struct fat_header					t_fat_header;
 typedef struct fat_arch						t_fat_arch;
 typedef struct fat_arch_64					t_fat_arch_64;
 
-typedef struct nlist t_nlist;
-typedef struct nlist_64 t_nlist_64;
+typedef struct nlist						t_nlist;
+typedef struct nlist_64						t_nlist_64;
 
 typedef struct				s_symdef {
 	u32						name;
@@ -151,10 +151,8 @@ typedef struct				s_vm {
 	t_ftype					type;
 	t_target				target;
 	cpu_type_t				cpu;
-	union {
 	u32						ncmds;
 	t_ar_info				ar_info;
-	};
 	bool					is_swap;
 	bool					is_64;
 
@@ -195,19 +193,34 @@ t_symtab_cmd				read_symtab_cmd(void *p, bool is_swap);
 t_seg_cmd_64				read_segment(void *p, bool is_swap, bool is_64);
 t_section_64				read_section(void *p, bool is_swap, bool is_64);
 
-# define BREAK do { return(EINVAL); } while (0)
+int							gen_filter(int r, char *p, char *f);
 
-# define L() do { printerr(" %s:%i\n", __FILE__, __LINE__);} while(0) 
-# define PRINT_L(l) do { printerr("%llu > %llu", (u64)l, vm.mem.size); L();} while(0)
-# define PRINT_R(r) do { printerr("ERR = %llu", __FILE__, __LINE__); L();} while(0)
-# define PRINT_F(f, r) do { PRINT_R(r); printerr("%s: %s\n", f, ft_strerror(r));} while(0)
+# define OK 0
+# define ERR_MAGIC 132
+# define ERR_MEM 133
 
-# define CHECK_LEN(l) do { if (l > vm.mem.size) { PRINT_L(l); BREAK; }} while (0)
+# define WRAP(T) do { T } while (0)
+# define WRAP_C(T) if (1) { T } else { }
+# define BREAK WRAP( return(ERR_MEM); )
+
+# ifdef DEBUG
+#  define L() WRAP(printerr(" %s:%i\n", __FILE__, __LINE__);)
+#  define PRINT_L(l) WRAP(printerr("%llu > %llu", (u64)l, vm.mem.size); L();)
+#  define PRINT_R(r) WRAP(printerr("ERR = %llu", (u64)l); L();)
+#  define PRINT_F(p, f, r) WRAP(printerr("%s: %s: %s\n", p, f, ft_strerror(r));)
+#  define CHECK_LEN(l) WRAP(if (l > vm.mem.size) { PRINT_L(l); BREAK; })
+#  define CHECK(t) WRAP(int r = t; if (r) {PRINT_R(r); return(r);})
+# else
+#  define PRINT_F(p, f, r) WRAP(printerr("%s: %s: %s\n", p, f, ft_strerror(r));)
+#  define CHECK_LEN(l) WRAP(if (l > vm.mem.size) { BREAK; })
+#  define CHECK(t) WRAP(int r = t; if (r) {return(r);})
+# endif
+
+
 # define GET_CHECKED_PTR(o, l) ({CHECK_LEN(o+l); vm.mem.data+o;})
 # define GET_CHECKED_VAL(o, t) *(t*)({CHECK_LEN(o+sizeof(t)); vm.mem.data+o;})
 
-# define CHECK(t) do {int r = t; if (r) {PRINT_R(r); return(r);}} while (0)
-# define CHECK_SKIP(f, t) if (1) {int r = t; if (r) {PRINT_F(f, r); continue;}} else {}
-# define CHECK_DISP(f, t) do {int r = t; if (r) {PRINT_F(f, r); }} while (0)
+# define CHECK_SKIP(p, f, t) WRAP_C(int r = t; if (gen_filter(r, p, f)) {PRINT_F(p, f, r); continue;})
+# define CHECK_DISP(p, f, t) WRAP(int r = t; if (gen_filter(r, p, f)) {PRINT_F(p, f, r); })
 
 #endif

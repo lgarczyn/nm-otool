@@ -14,9 +14,9 @@ NAME = libft.a
 
 DEB = -g3 -fsanitize=address
 
-OPT = -O0
+OPT = -O3
 
-FLAGS = -Wall -Wextra -Werror -funsigned-char -fno-signed-char  $(OPT) $(DEB)
+FLAGS = -Wall -Wextra -Werror -funsigned-char -fno-signed-char  $(OPT)
 
 INCLUDES = includes
 

@@ -1,1 +1,0 @@
-./ft_nm ${TEST} > a ; nm ${TEST} > b ; code --diff a b ; ./ft_otool ${TEST} > c ; otool -t ${TEST} > d ; code --diff c d 

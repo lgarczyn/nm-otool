@@ -12,6 +12,18 @@
 
 #include "nm_otool.h"
 
+static int			nm_filter(int r, char *p, char *f)
+{
+	if (r == ERR_MAGIC)
+	{
+		printerr(
+			"%s: %s The file was not recognized as a valid object file\n",
+			p, f);
+		return (0);
+	}
+	return (r);
+}
+
 int					main(int argc, char **argv)
 {
 	int				i;
@@ -29,9 +41,11 @@ int					main(int argc, char **argv)
 	i = 0;
 	while (++i < argc)
 	{
-		CHECK_SKIP(argv[i], map(&mem, argv[i]));
-		CHECK_DISP(argv[i], disp_file(mem, target, argv[i], NULL));
-		munmap(mem.data, mem.size);
+		CHECK_SKIP(argv[0], argv[i], map(&mem, argv[i]));
+		CHECK_DISP(argv[0], argv[i], nm_filter(
+			disp_file(mem, target, argv[i], NULL),
+			argv[0], argv[i]));
+		CHECK_DISP(argv[0], argv[i], munmap(mem.data, mem.size));
 	}
 	ft_flush_buf();
 	return (errno);
