@@ -71,13 +71,6 @@ t_mem				get_sub_mem(t_mem mem, u64 offset, u64 size)
 		out.size = 0;
 	else if (out.data + out.size > mem.data + mem.size)
 		out.size = (u64)(mem.data + mem.size - out.data);
-	if (out.data + out.size > mem.data + mem.size)
-		printerr("WTF");
-	if (out.file + out.offset != out.data)
-	{
-		printerr("WTF\n");
-		print("WTF\n");
-	}
 	return (out);
 }
 

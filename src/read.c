@@ -54,6 +54,23 @@ t_symtab_cmd		read_symtab_cmd(void *p, bool is_swap)
 	return (out);
 }
 
+t_nlist_64			read_sym_token(t_vm vm, void *p)
+{
+	t_nlist_64		out;
+	t_nlist_64		*sym_64;
+	t_nlist			*sym_32;
+
+	sym_64 = (t_nlist_64*)p;
+	sym_32 = (t_nlist*)p;
+	out.n_un.n_strx = s(sym_64->n_un.n_strx, vm.is_swap);
+	out.n_type = sym_64->n_type;
+	out.n_sect = sym_64->n_sect;
+	out.n_desc = sym_64->n_desc;
+	out.n_value = vm.is_64 ?
+		sl(sym_64->n_value, vm.is_swap) : s(sym_32->n_value, vm.is_swap);
+	return (out);
+}
+
 t_section_64		read_section(void *p, bool swap, bool is64)
 {
 	t_section_64	out;

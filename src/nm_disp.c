@@ -12,18 +12,6 @@
 
 #include "nm_otool.h"
 
-static t_nlist_64	list64(t_nlist list)
-{
-	t_nlist_64		out;
-
-	out.n_un.n_strx = list.n_un.n_strx;
-	out.n_type = list.n_type;
-	out.n_sect = list.n_sect;
-	out.n_desc = list.n_desc;
-	out.n_value = list.n_value;
-	return (out);
-}
-
 static void			sort_symtab(t_array *array)
 {
 	t_sym_token		*tokens;
@@ -50,21 +38,6 @@ static void			sort_symtab(t_array *array)
 			}
 		}
 	}
-}
-
-t_nlist_64			read_sym(t_vm vm, t_nlist_64 *sym)
-{
-	t_nlist_64		out;
-	t_nlist			*sym_32;
-
-	sym_32 = (t_nlist*)sym;
-	out.n_un.n_strx = s(sym->n_un.n_strx, vm.is_swap);
-	out.n_type = sym->n_type;
-	out.n_sect = sym->n_sect;
-	out.n_desc = sym->n_desc;
-	out.n_value = vm.is_64 ?
-		sl(sym->n_value, vm.is_swap) : s(sym_32->n_value, vm.is_swap);
-	return (out);
 }
 
 void				disp_symtab(t_vm vm, t_array *symtab, t_array *sect_types)
@@ -112,12 +85,11 @@ int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
 	i = 0;
 	while (i < cmd.nsyms)
 	{
-		token.sym = vm.is_64 ? array_64[i] : list64(array[i]);
-		if (token.sym.n_un.n_strx == 0)
-			print("lol test\n");
+		token.sym = read_sym_token(vm,
+			vm.is_64 ? (void*)&array_64[i] : (void*)&array[i]);
 		token.name = string_table + token.sym.n_un.n_strx;
 		if (check_string(vm, token.name))
-			token.name = (u8*)"OUT OF BOUNDS\n";
+			token.name = (u8*)"OUT OF BOUNDS";
 		if (*token.name)
 			CHECK(array_push(tokens, &token, sizeof(token)));
 		i++;

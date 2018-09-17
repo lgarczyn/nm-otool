@@ -179,10 +179,10 @@ u64					sl(u64 x, bool is_swap);
 void				swap_header(t_mach_header *header, bool is_swap);
 
 t_load_cmd			read_load(void *cmd, bool is_swap);
-t_dysymtab_cmd		read_dysymtab_cmd(void *p, bool is_swap);
-t_symtab_cmd		read_symtab_cmd(void *p, bool is_swap);
 t_seg_cmd_64		read_segment(void *p, bool is_swap, bool is_64);
 t_section_64		read_section(void *p, bool is_swap, bool is_64);
+t_symtab_cmd		read_symtab_cmd(void *p, bool is_swap);
+t_nlist_64			read_sym_token(t_vm vm, void *p);
 
 int					gen_filter(int r, char *p, char *f);
 
