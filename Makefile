@@ -22,7 +22,7 @@ LIB = -L libft -lft -L printf -lftprintf
 
 DEB = -g3 -fsanitize=address 
 
-OPT = -O3
+OPT = -g #-O3
 
 FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT) #$(DEB)
 

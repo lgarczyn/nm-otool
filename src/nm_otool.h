@@ -160,7 +160,7 @@ t_mem				get_arch_map(t_vm vm, void *ptr, cpu_type_t *cpu);
 t_mem				get_sub_mem(t_mem mem, u64 offset, u64 size);
 int					check_string(t_vm vm, u8 *str);
 int					array_push(t_array *array, void *data, size_t size);
-void				sect_type_push(t_array *stypes, char *sectname);
+void				free_arrays(t_vm *vm);
 cpu_type_t			get_cpu_type(void);
 
 char				get_sect_type(char *name);

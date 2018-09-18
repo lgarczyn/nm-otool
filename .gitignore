@@ -8,3 +8,5 @@
 ft_nm
 ft_otool
 .vscode/
+nm_diff
+otool_diff

@@ -83,7 +83,7 @@ int					disp_object(t_vm vm, char *file, char *ar, bool disp_cpu)
 	bzero(&sect_types, sizeof(t_array));
 	bzero(&sym_tokens, sizeof(t_array));
 	if (disp_cpu)
-		print("%s (architecture %s):\n", file, get_cpu(vm.cpu));
+		print("\n%s (for architecture %s):\n", file, get_cpu(vm.cpu));
 	else if (ar)
 		print("%s%s(%s):\n", vm.target.is_otool ? "" : "\n", ar, file);
 	else if (vm.target.disp_names)
@@ -117,6 +117,7 @@ int					disp_fat(t_vm vm, char *file, bool all)
 		{
 			CHECK(get_vm(&archvm, archmem, vm.target));
 			CHECK(disp_object(archvm, file, NULL, vm.ncmds > 1 && all));
+			free_arrays(&vm);
 			if (all == false)
 				return (OK);
 		}
@@ -130,13 +131,16 @@ int					disp_fat(t_vm vm, char *file, bool all)
 int					disp_file(t_mem mem, t_target target, char *file, char *ar)
 {
 	t_vm			vm;
+	int				err;
 
 	CHECK(get_vm(&vm, mem, target));
 	if (vm.type == f_fat)
-		CHECK(disp_fat(vm, file, false));
+		err = disp_fat(vm, file, false);
 	else if (vm.type == f_ranlib)
-		CHECK(disp_ranlib(vm, file));
+		err = disp_ranlib(vm, file);
 	else
-		CHECK(disp_object(vm, file, ar, false));
+		err = disp_object(vm, file, ar, false);
+	free_arrays(&vm);
+	CHECK(err);
 	return (OK);
 }

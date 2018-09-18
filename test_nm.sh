@@ -3,7 +3,7 @@ for f in /usr/bin/*
 do
     echo $f
     echo $f >> nm_diff ;
-    nm $f  > /tmp/a
-    ./ft_nm $f > /tmp/b
-    diff /tmp/a /tmp/b >> nm_diff
+    nm $f  > /tmp/nm_a
+    ./ft_nm $f > /tmp/nm_b
+    diff /tmp/nm_a /tmp/nm_b >> nm_diff
 done

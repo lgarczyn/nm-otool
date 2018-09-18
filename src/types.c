@@ -42,7 +42,7 @@ char				get_sym_type(t_nlist_64 sym, t_array *stypes)
 		ret = 'U';
 	else if ((sym.n_type & N_TYPE) == N_SECT)
 		ret = ((char*)stypes->data)[
-			MAX(sym.n_sect - 1, stypes->pos)];
+			MIN(sym.n_sect - 1, stypes->pos)];
 	else if ((sym.n_type & N_TYPE) == N_INDR)
 		ret = 'I';
 	if ((sym.n_type & N_STAB) != 0)

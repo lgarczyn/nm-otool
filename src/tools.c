@@ -30,6 +30,14 @@ int					array_push(t_array *array, void *data, size_t size)
 	return (OK);
 }
 
+void				free_arrays(t_vm *vm)
+{
+	free(vm->sect_types);
+	free(vm->sym_tokens);
+	vm->sect_types = NULL;
+	vm->sym_tokens = NULL;
+}
+
 cpu_type_t			get_cpu_type(void)
 {
 	cpu_type_t		cpu[10];
