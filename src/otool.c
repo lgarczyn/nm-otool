@@ -30,7 +30,7 @@ static t_target		get_otool_target(void)
 
 	ft_bzero(&target, sizeof(t_target));
 	target.show_data = false;
-	target.show_text = false;
+	target.show_text = true;
 	target.show_names = true;
 	target.is_otool = true;
 	return (target);
@@ -48,7 +48,7 @@ static void			filter_args(int argc, char **argv, t_target *target)
 		j = -1;
 		while ((c = argv[i][++j]))
 			if (c == 't')
-				target->show_text = true;
+				target->show_text = false;
 			else if (c == 'd')
 				target->show_data = true;
 			else if (c == 's' && argc > i + 2 && j == 1)

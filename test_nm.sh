@@ -35,3 +35,10 @@ echo $f >> nm_diff ;
 nm -np $f  > /tmp/nm_a
 ./ft_nm -rp $f > /tmp/nm_b
 diff /tmp/nm_a /tmp/nm_b >> nm_diff
+
+f=/usr/bin/audiodevice
+echo $f
+echo $f >> nm_diff ;
+nm -j $f  > /tmp/nm_a
+./ft_nm -j $f > /tmp/nm_b
+diff /tmp/nm_a /tmp/nm_b >> nm_diff

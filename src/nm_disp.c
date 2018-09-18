@@ -55,6 +55,24 @@ static void			sort_symtab(t_array *array, t_target target)
 	}
 }
 
+static void			disp_sym(t_vm vm, char t, t_sym_token *syms)
+{
+	if (t != 'z' && t != 'Z' && t != '?')
+	{
+		if (vm.target.only_name)
+			print("%s\n", syms->name);
+		else if (vm.is_64)
+			if (t != 'U' && t != 'u')
+				print("%.16llx %c %s\n", syms->sym.n_value, t, syms->name);
+			else
+				print("% 17 %c %s\n", t, syms->name);
+		else if (t != 'U' && t != 'u')
+			print("%.8llx %c %s\n", syms->sym.n_value, t, syms->name);
+		else
+			print("% 9 %c %s\n", t, syms->name);
+	}
+}
+
 void				disp_symtab(t_vm vm, t_array *symtab, t_array *sect_types)
 {
 	t_sym_token		*syms;
@@ -67,20 +85,7 @@ void				disp_symtab(t_vm vm, t_array *symtab, t_array *sect_types)
 	while (len--)
 	{
 		t = get_sym_type(syms->sym, sect_types);
-		if (t != 'z' && t != 'Z' && t != '?')
-		{
-			if (vm.target.only_name)
-				print("%s\n", syms->name);
-			else if (vm.is_64)
-				if (t != 'U' && t != 'u')
-					print("%.16llx %c %s\n", syms->sym.n_value, t, syms->name);
-				else
-					print("% 17 %c %s\n", t, syms->name);
-			else if (t != 'U' && t != 'u')
-				print("%.8llx %c %s\n", syms->sym.n_value, t, syms->name);
-			else
-				print("% 9 %c %s\n", t, syms->name);
-		}
+		disp_sym(vm, t, syms);
 		syms++;
 	}
 }
