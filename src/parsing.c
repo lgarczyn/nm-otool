@@ -128,7 +128,6 @@ int					disp_file(t_mem mem, t_target target, char *file, char *ar)
 {
 	t_vm			vm;
 
-	target.show_cpu = false;
 	CHECK(get_vm(&vm, mem, target));
 	if (vm.type == f_fat)
 		CHECK(disp_fat(vm, file, false));

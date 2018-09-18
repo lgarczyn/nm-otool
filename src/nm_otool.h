@@ -123,12 +123,20 @@ typedef struct		s_sym_token {
 
 struct s_vm;
 
+typedef enum		e_sorting {
+	sort_alphabetical = 0,
+	sort_numerical,
+	no_sorting,
+}					t_sorting;
+
 typedef struct		s_target {
 	bool			is_otool;
 	bool			show_names;
 	bool			show_cpu;
 
-	bool			show_all;
+	bool			only_name;
+	t_sorting		sorting;
+	bool			reversed;
 
 	bool			show_text;
 	bool			show_data;

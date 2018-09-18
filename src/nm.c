@@ -38,8 +38,14 @@ static void			filter_args(int argc, char **argv, t_target *target)
 	{
 		j = -1;
 		while ((c = argv[i][++j]))
-			if (c == 'a')
-				target->show_all = true;
+			if (c == 'j')
+				target->only_name = true;
+			else if (c == 'n')
+				target->sorting = sort_numerical;
+			else if (c == 'p')
+				target->sorting = no_sorting;
+			else if (c == 'r')
+				target->reversed = true;
 		argv[i] = NULL;
 	}
 }

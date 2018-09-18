@@ -12,12 +12,30 @@
 
 #include "nm_otool.h"
 
-static void			sort_symtab(t_array *array)
+static int			should_swap(t_sym_token a, t_sym_token b, t_target t)
+{
+	int				c;
+
+	if (t.sorting == no_sorting)
+		return (0);
+	if (t.sorting == sort_alphabetical)
+		c = ft_strcmp((char*)a.name, (char*)b.name);
+	else
+		c = 0;
+	if (c == 0)
+		c = a.sym.n_value > b.sym.n_value;
+	if (c < 0)
+		c = 0;
+	if (t.reversed)
+		return (!c);
+	return (c);
+}
+
+static void			sort_symtab(t_array *array, t_target target)
 {
 	t_sym_token		*tokens;
 	size_t			i;
 	size_t			j;
-	int				c;
 	t_sym_token		tmp;
 
 	tokens = (t_sym_token*)array->data;
@@ -27,10 +45,7 @@ static void			sort_symtab(t_array *array)
 		j = i;
 		while (++j < array->pos / sizeof(t_sym_token))
 		{
-			c = ft_strcmp((char*)tokens[i].name, (char*)tokens[j].name);
-			if (c == 0)
-				c = tokens[i].sym.n_value > tokens[j].sym.n_value;
-			if (c > 0)
+			if (should_swap(tokens[i], tokens[j], target))
 			{
 				tmp = tokens[i];
 				tokens[i] = tokens[j];
@@ -46,15 +61,17 @@ void				disp_symtab(t_vm vm, t_array *symtab, t_array *sect_types)
 	size_t			len;
 	char			t;
 
-	sort_symtab(symtab);
+	sort_symtab(symtab, vm.target);
 	syms = (t_sym_token*)symtab->data;
 	len = symtab->pos / sizeof(t_sym_token);
 	while (len--)
 	{
 		t = get_sym_type(syms->sym, sect_types);
-		if ((t != 'z' && t != 'Z' && t != '?') || vm.target.show_all)
+		if (t != 'z' && t != 'Z' && t != '?')
 		{
-			if (vm.is_64)
+			if (vm.target.only_name)
+				print("%s\n", syms->name);
+			else if (vm.is_64)
 				if (t != 'U' && t != 'u')
 					print("%.16llx %c %s\n", syms->sym.n_value, t, syms->name);
 				else
