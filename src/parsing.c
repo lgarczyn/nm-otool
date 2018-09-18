@@ -85,60 +85,56 @@ int					disp_object(t_vm vm, char *file, char *ar)
 	disp_filename(vm, file, ar);
 	while (i++ < vm.ncmds)
 	{
-		if (disp_segment(vm, offset, &sect_size))
-		{
-			free_arrays(&vm);
-			return (1);
-		}
+		CHECK_CLEAN(disp_segment(vm, offset, &sect_size),
+			free_arrays(&vm));
 		offset += sect_size;
 	}
 	disp_symtab(vm, vm.sym_tokens, vm.sect_types);
 	free_arrays(&vm);
+	if (vm.target.show_header)
+		disp_header((t_mach_header*)vm.mem.data, vm.is_swap);
 	return (OK);
 }
 
 int					disp_fat(t_vm vm, char *file, bool all)
 {
 	u32				i;
-	t_vm			archvm;
 	t_mem			archmem;
 	void			*ptr;
 	cpu_type_t		cpu;
 
 	i = -1;
 	ptr = GET_CHECKED_PTR(sizeof(t_fat_header),
-		vm.ncmds * (vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch)));
+		vm.ncmds *
+			(vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch)));
 	vm.target.show_cpu = vm.ncmds > 1 && all;
 	while (++i < vm.ncmds)
 	{
 		archmem = get_arch_map(vm, ptr, &cpu);
 		if (cpu == 0x1000007 || all)
 		{
-			CHECK(get_vm(&archvm, archmem, vm.target));
-			CHECK(disp_object(archvm, file, NULL));
+			CHECK(disp_file(archmem, vm.target, file, NULL));
 			if (all == false)
 				return (OK);
 		}
 		ptr += vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch);
 	}
 	if (all == false)
-		return (disp_fat(vm, file, true));
+		disp_fat(vm, file, true);
 	return (OK);
 }
 
 int					disp_file(t_mem mem, t_target target, char *file, char *ar)
 {
 	t_vm			vm;
-	int				err;
 
 	target.show_cpu = false;
 	CHECK(get_vm(&vm, mem, target));
 	if (vm.type == f_fat)
-		err = disp_fat(vm, file, false);
+		CHECK(disp_fat(vm, file, false));
 	else if (vm.type == f_ranlib)
-		err = disp_ranlib(vm, file);
+		CHECK(disp_ranlib(vm, file));
 	else
-		err = disp_object(vm, file, ar);
-	CHECK(err);
+		CHECK(disp_object(vm, file, ar));
 	return (OK);
 }

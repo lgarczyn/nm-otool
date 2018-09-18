@@ -125,10 +125,16 @@ struct s_vm;
 
 typedef struct		s_target {
 	bool			is_otool;
+	bool			show_names;
+	bool			show_cpu;
+
+	bool			show_all;
+
 	bool			show_text;
 	bool			show_data;
-	bool			show_cpu;
-	bool			show_names;
+	bool			show_header;
+	char			*target_seg;
+	char			*target_sect;
 }					t_target;
 
 typedef enum		e_ftype {
@@ -169,6 +175,7 @@ const char			*get_cpu(cpu_type_t cpu);
 
 void				disp_filename(t_vm vm, char *file, char *ar);
 void				disp_data(t_vm *vm, u8 *data, size_t size, size_t addr);
+void				disp_header(t_mach_header *header, bool is_swap);
 
 void				disp_symtab(t_vm vm, t_array *sym, t_array *types);
 int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens);
@@ -211,6 +218,8 @@ int					gen_filter(int r, char *p, char *f);
 #  define CHECK_LEN(l) WRAP(if (l > vm.mem.size) { BREAK; })
 #  define CHECK(t) WRAP(int r = t; if (r) {return(r);})
 # endif
+
+# define CHECK_CLEAN(t, c) WRAP(int r = t; if (r) {c; return(r);})
 
 # define GET_CHECKED_PTR(o, l) ({CHECK_LEN(o+l); vm.mem.data+o;})
 # define GET_CHECKED_VAL(o, t) *(t*)({CHECK_LEN(o+sizeof(t)); vm.mem.data+o;})

@@ -1,5 +1,5 @@
 rm nm_diff ;
-for f in /usr/bin/*
+for f in /usr/lib/* /usr/bin/* obj/*
 do
     echo $f
     echo $f >> nm_diff ;

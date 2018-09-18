@@ -110,5 +110,9 @@ int					filter_disp(t_target target, t_section_64 sec)
 		ft_strcmp(sec.sectname, SECT_DATA) == 0 &&
 		ft_strcmp(sec.segname, SEG_DATA) == 0)
 		return (1);
+	if (target.target_seg && target.target_sect &&
+		ft_strcmp(sec.sectname, target.target_sect) == 0 &&
+		ft_strcmp(sec.segname, target.target_seg) == 0)
+		return (1);
 	return (0);
 }

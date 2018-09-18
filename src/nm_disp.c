@@ -44,26 +44,25 @@ void				disp_symtab(t_vm vm, t_array *symtab, t_array *sect_types)
 {
 	t_sym_token		*syms;
 	size_t			len;
-	t_nlist_64		s;
+	char			t;
 
 	sort_symtab(symtab);
 	syms = (t_sym_token*)symtab->data;
 	len = symtab->pos / sizeof(t_sym_token);
 	while (len--)
 	{
-		s = syms->sym;
-		s.n_type = get_sym_type(s, sect_types);
-		if (s.n_type != 'z' && s.n_type != 'Z' && s.n_type != '?')
+		t = get_sym_type(syms->sym, sect_types);
+		if ((t != 'z' && t != 'Z' && t != '?') || vm.target.show_all)
 		{
 			if (vm.is_64)
-				if (s.n_type != 'U' && s.n_type != 'u')
-					print("%.16llx %c %s\n", s.n_value, s.n_type, syms->name);
+				if (t != 'U' && t != 'u')
+					print("%.16llx %c %s\n", syms->sym.n_value, t, syms->name);
 				else
-					print("% 17 %c %s\n", s.n_type, syms->name);
-			else if (s.n_type != 'U' && s.n_type != 'u')
-				print("%.8llx %c %s\n", s.n_value, s.n_type, syms->name);
+					print("% 17 %c %s\n", t, syms->name);
+			else if (t != 'U' && t != 'u')
+				print("%.8llx %c %s\n", syms->sym.n_value, t, syms->name);
 			else
-				print("% 9 %c %s\n", s.n_type, syms->name);
+				print("% 9 %c %s\n", t, syms->name);
 		}
 		syms++;
 	}

@@ -28,7 +28,7 @@ int					map(t_mem *out, char *filename)
 		return (errno);
 	if (st.st_size == 0)
 		return (ERR_MAGIC);
-	out->data = mmap(0, st.st_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+	out->data = mmap(0, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (out->data == NULL || out->data == (u8*)-1)
 		return (errno);
 	out->file = out->data;

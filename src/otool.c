@@ -28,6 +28,7 @@ static t_target		get_otool_target(void)
 {
 	t_target		target;
 
+	ft_bzero(&target, sizeof(t_target));
 	target.show_data = false;
 	target.show_text = false;
 	target.show_names = true;
@@ -35,29 +36,30 @@ static t_target		get_otool_target(void)
 	return (target);
 }
 
-void				filter_args(int *argc, char **argv, t_target *target)
+static void			filter_args(int argc, char **argv, t_target *target)
 {
 	int				i;
 	int				j;
 	char			c;
 
-	if (*argc == 1)
-	{
-		*argc = 2;
-		argv[1] = "a.out";
-		return ;
-	}
 	i = 0;
-	while (++i < *argc && argv[i][0] == '-')
+	while (++i < argc && argv[i][0] == '-')
 	{
 		j = -1;
 		while ((c = argv[i][++j]))
-		{
 			if (c == 't')
 				target->show_text = true;
-			if (c == 'd')
+			else if (c == 'd')
 				target->show_data = true;
-		}
+			else if (c == 's' && argc > i + 2 && j == 1)
+			{
+				target->target_seg = argv[i + 1];
+				target->target_sect = argv[i + 2];
+				argv[i + 1] = NULL;
+				argv[i + 2] = NULL;
+			}
+			else if (c == 'h')
+				target->show_header = true;
 		argv[i] = NULL;
 	}
 }
@@ -70,7 +72,7 @@ int					main(int argc, char **argv)
 
 	target = get_otool_target();
 	ft_buf(malloc(4096), 4096, 1);
-	filter_args(&argc, argv, &target);
+	filter_args(argc, argv, &target);
 	i = 0;
 	while (++i < argc)
 	{

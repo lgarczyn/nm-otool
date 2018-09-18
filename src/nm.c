@@ -26,23 +26,49 @@ static int			nm_filter(char *p, char *f, int r)
 	return (gen_filter(r, p, f));
 }
 
+static void			filter_args(int argc, char **argv, t_target *target)
+{
+	int				i;
+	int				j;
+	char			c;
+
+	target->show_names = argc > 2;
+	i = 0;
+	while (++i < argc && argv[i][0] == '-')
+	{
+		j = -1;
+		while ((c = argv[i][++j]))
+			if (c == 'a')
+				target->show_all = true;
+		argv[i] = NULL;
+	}
+}
+
+static void			check_args(int *argc, char **argv)
+{
+	if (*argc == 1)
+	{
+		*argc = 2;
+		argv[1] = "a.out";
+	}
+}
+
 int					main(int argc, char **argv)
 {
 	int				i;
 	t_mem			mem;
 	t_target		target;
 
+	ft_bzero(&target, sizeof(t_target));
 	target.is_otool = false;
+	check_args(&argc, argv);
+	filter_args(argc, argv, &target);
 	ft_buf(malloc(4096), 4096, 1);
-	if (argc == 1)
-	{
-		argc = 2;
-		argv[1] = "a.out";
-	}
-	target.show_names = argc > 2;
 	i = 0;
 	while (++i < argc)
 	{
+		if (argv[i] == NULL)
+			continue;
 		if (nm_filter(argv[0], argv[i], map(&mem, argv[i])))
 			continue;
 		nm_filter(argv[0], argv[i], disp_file(mem, target, argv[i], NULL));
