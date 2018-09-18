@@ -24,7 +24,7 @@ void				disp_header(t_mach_header *p, bool is_swap)
 	h.sizeofcmds = s(p->sizeofcmds, is_swap);
 	h.flags = s(p->flags, is_swap);
 	CPU_ARCH_ABI64;
-	print("Mach h\n");
+	print("Mach header\n");
 	print("      magic cputype cpusubtype  caps");
 	print("    filetype ncmds sizeofcmds      flags\n");
 	print(" 0x%.8x %7u %10u  0x%.2x %11u %5u %10u 0x%5.8X\n",
