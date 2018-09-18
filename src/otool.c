@@ -55,8 +55,11 @@ static void			filter_args(int argc, char **argv, t_target *target)
 			{
 				target->target_seg = argv[i + 1];
 				target->target_sect = argv[i + 2];
+				argv[i] = NULL;
 				argv[i + 1] = NULL;
 				argv[i + 2] = NULL;
+				i += 2;
+				break ;
 			}
 			else if (c == 'h')
 				target->show_header = true;
