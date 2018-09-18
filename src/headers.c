@@ -45,6 +45,7 @@ int					get_vm(t_vm *out, t_mem mem, t_target target)
 	t_vm			vm;
 	t_ar_info		ar_info;
 
+	ft_bzero(&vm, sizeof(t_vm));
 	vm.mem = mem;
 	CHECK_LEN(sizeof(t_mach_header));
 	mach_header = (t_mach_header*)mem.data;

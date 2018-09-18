@@ -97,3 +97,18 @@ const char			*get_cpu(cpu_type_t cpu)
 		return (names[cpu]);
 	return ("unknown");
 }
+
+int					filter_disp(t_target target, t_section_64 sec)
+{
+	if (target.is_otool == false)
+		return (0);
+	if (target.show_text &&
+		ft_strcmp(sec.sectname, SECT_TEXT) == 0 &&
+		ft_strcmp(sec.segname, SEG_TEXT) == 0)
+		return (1);
+	if (target.show_data &&
+		ft_strcmp(sec.sectname, SECT_DATA) == 0 &&
+		ft_strcmp(sec.segname, SEG_DATA) == 0)
+		return (1);
+	return (0);
+}

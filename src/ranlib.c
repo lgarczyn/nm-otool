@@ -57,7 +57,7 @@ int					disp_ranlib(t_vm vm, char *file)
 	t_array			array;
 	t_ar_info		info;
 
-	bzero(&array, sizeof(array));
+	ft_bzero(&array, sizeof(array));
 	offset = 8 + vm.ar_info.header_len;
 	if (vm.target.is_otool == true)
 		print("Archive : %s\n", file);

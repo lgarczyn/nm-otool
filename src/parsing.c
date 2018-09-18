@@ -28,14 +28,12 @@ int					disp_sections(t_vm vm, u64 offset, u64 n)
 		sec = read_section(&vm.mem.data[offset], vm.is_swap, vm.is_64);
 		t = get_sect_type(sec.sectname);
 		array_push(vm.sect_types, &t, sizeof(char));
-		if (vm.target.is_otool &&
-			ft_strcmp(sec.sectname, vm.target.section) == 0 &&
-			ft_strcmp(sec.segname, vm.target.segment) == 0)
+		if (filter_disp(vm.target, sec))
 		{
 			print("Contents of (%s,%s) section\n",
-				vm.target.segment, vm.target.section);
+				sec.segname, sec.sectname);
 			CHECK_LEN(sec.offset + sec.size);
-			vm.target.display(&vm, &vm.mem.data[sec.offset],
+			disp_data(&vm, &vm.mem.data[sec.offset],
 				sec.size, sec.addr);
 		}
 		offset += vm.is_64 ? sizeof(t_section_64) : sizeof(t_section_32);
@@ -70,7 +68,7 @@ int					disp_segment(t_vm vm, u64 offset, u32 *sect_size)
 	return (OK);
 }
 
-int					disp_object(t_vm vm, char *file, char *ar, bool disp_cpu)
+int					disp_object(t_vm vm, char *file, char *ar)
 {
 	u64				offset;
 	u32				i;
@@ -78,24 +76,24 @@ int					disp_object(t_vm vm, char *file, char *ar, bool disp_cpu)
 	t_array			sym_tokens;
 	u32				sect_size;
 
+	ft_bzero(&sect_types, sizeof(t_array));
+	ft_bzero(&sym_tokens, sizeof(t_array));
 	vm.sect_types = &sect_types;
 	vm.sym_tokens = &sym_tokens;
-	bzero(&sect_types, sizeof(t_array));
-	bzero(&sym_tokens, sizeof(t_array));
-	if (disp_cpu)
-		print("\n%s (for architecture %s):\n", file, get_cpu(vm.cpu));
-	else if (ar)
-		print("%s%s(%s):\n", vm.target.is_otool ? "" : "\n", ar, file);
-	else if (vm.target.disp_names)
-		print("%s%s:\n", vm.target.is_otool ? "" : "\n", file);
 	offset = vm.is_64 ? sizeof(t_mach_header_64) : sizeof(t_mach_header);
 	i = 0;
+	disp_filename(vm, file, ar);
 	while (i++ < vm.ncmds)
 	{
-		CHECK(disp_segment(vm, offset, &sect_size));
+		if (disp_segment(vm, offset, &sect_size))
+		{
+			free_arrays(&vm);
+			return (1);
+		}
 		offset += sect_size;
 	}
-	disp_symtab(vm, &sym_tokens, &sect_types);
+	disp_symtab(vm, vm.sym_tokens, vm.sect_types);
+	free_arrays(&vm);
 	return (OK);
 }
 
@@ -110,14 +108,14 @@ int					disp_fat(t_vm vm, char *file, bool all)
 	i = -1;
 	ptr = GET_CHECKED_PTR(sizeof(t_fat_header),
 		vm.ncmds * (vm.is_64 ? sizeof(t_fat_arch_64) : sizeof(t_fat_arch)));
+	vm.target.show_cpu = vm.ncmds > 1 && all;
 	while (++i < vm.ncmds)
 	{
 		archmem = get_arch_map(vm, ptr, &cpu);
 		if (cpu == 0x1000007 || all)
 		{
 			CHECK(get_vm(&archvm, archmem, vm.target));
-			CHECK(disp_object(archvm, file, NULL, vm.ncmds > 1 && all));
-			free_arrays(&vm);
+			CHECK(disp_object(archvm, file, NULL));
 			if (all == false)
 				return (OK);
 		}
@@ -133,14 +131,14 @@ int					disp_file(t_mem mem, t_target target, char *file, char *ar)
 	t_vm			vm;
 	int				err;
 
+	target.show_cpu = false;
 	CHECK(get_vm(&vm, mem, target));
 	if (vm.type == f_fat)
 		err = disp_fat(vm, file, false);
 	else if (vm.type == f_ranlib)
 		err = disp_ranlib(vm, file);
 	else
-		err = disp_object(vm, file, ar, false);
-	free_arrays(&vm);
+		err = disp_object(vm, file, ar);
 	CHECK(err);
 	return (OK);
 }

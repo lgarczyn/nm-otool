@@ -39,7 +39,7 @@ int					main(int argc, char **argv)
 		argc = 2;
 		argv[1] = "a.out";
 	}
-	target.disp_names = argc > 2;
+	target.show_names = argc > 2;
 	i = 0;
 	while (++i < argc)
 	{

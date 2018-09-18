@@ -124,11 +124,11 @@ typedef struct		s_sym_token {
 struct s_vm;
 
 typedef struct		s_target {
-	int				disp_names;
 	bool			is_otool;
-	char			*segment;
-	char			*section;
-	void			(*display)(struct s_vm *vm, u8 *d, size_t s, size_t a);
+	bool			show_text;
+	bool			show_data;
+	bool			show_cpu;
+	bool			show_names;
 }					t_target;
 
 typedef enum		e_ftype {
@@ -161,12 +161,14 @@ t_mem				get_sub_mem(t_mem mem, u64 offset, u64 size);
 int					check_string(t_vm vm, u8 *str);
 int					array_push(t_array *array, void *data, size_t size);
 void				free_arrays(t_vm *vm);
-cpu_type_t			get_cpu_type(void);
 
 char				get_sect_type(char *name);
 char				get_sym_type(t_nlist_64 sym, t_array *stypes);
 t_ftype				get_type(void *p, bool *is_swap, bool *is_64);
 const char			*get_cpu(cpu_type_t cpu);
+
+void				disp_filename(t_vm vm, char *file, char *ar);
+void				disp_data(t_vm *vm, u8 *data, size_t size, size_t addr);
 
 void				disp_symtab(t_vm vm, t_array *sym, t_array *types);
 int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens);
@@ -174,9 +176,10 @@ int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens);
 int					disp_file(t_mem mem, t_target target, char *file, char *ar);
 int					disp_ranlib(t_vm vm, char *file);
 
+int					filter_disp(t_target target, t_section_64 sec);
+
 u32					s(u32 x, bool is_swap);
 u64					sl(u64 x, bool is_swap);
-void				swap_header(t_mach_header *header, bool is_swap);
 
 t_load_cmd			read_load(void *cmd, bool is_swap);
 t_seg_cmd_64		read_segment(void *p, bool is_swap, bool is_64);

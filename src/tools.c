@@ -32,19 +32,10 @@ int					array_push(t_array *array, void *data, size_t size)
 
 void				free_arrays(t_vm *vm)
 {
-	free(vm->sect_types);
-	free(vm->sym_tokens);
+	free(vm->sect_types->data);
+	free(vm->sym_tokens->data);
 	vm->sect_types = NULL;
 	vm->sym_tokens = NULL;
-}
-
-cpu_type_t			get_cpu_type(void)
-{
-	cpu_type_t		cpu[10];
-	size_t			size;
-
-	sysctlnametomib("hw.cputype", cpu, &size);
-	return ((cpu[0] + 1) | CPU_ARCH_ABI64);
 }
 
 int					check_string(t_vm vm, u8 *str)
@@ -93,7 +84,7 @@ int					gen_filter(int r, char *p, char *f)
 	}
 	if (r)
 	{
-		printerr("%s: %s: %s.", p, f, ft_strerror(r));
+		printerr("%s: %s: %s.\n", p, f, ft_strerror(r));
 	}
 	return (r);
 }
