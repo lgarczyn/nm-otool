@@ -20,31 +20,41 @@ OBJ = $(addprefix obj/, $(addsuffix .o, $(basename $(SRC))))
 
 LIB = -L libft -lft -L printf -lftprintf
 
-DEB = -g3 -fsanitize=address 
+DEB = #-g3 -fsanitize=address 
 
-OPT = -g #-O3
+OPT = -O2 -march=native
 
 FLG = -Wall -Wextra -Werror -funsigned-char -fno-signed-char -m64 $(OPT) #$(DEB)
 
 all: $(NAME)
 
-$(NAME):$(OBJ)
+$(NAME):libft/libft.a printf/libftprintf.a ft_nm ft_otool
+
+libft/libft.a:
 	cd libft && make
+
+printf/libftprintf.a:
 	cd printf && make
-	gcc -o ft_nm src/nm.c $(OBJ) $(INC) $(FLG) $(LIB)
-	gcc -o ft_otool src/otool.c $(OBJ) $(INC) $(FLG) $(LIB)
+
+ft_nm:$(OBJ) obj/nm.o
+	@mkdir -p obj
+	gcc -o ft_nm obj/nm.o $(OBJ) $(INC) $(FLG) $(LIB)
+
+ft_otool:$(OBJ) obj/otool.o
+	@mkdir -p obj
+	gcc -o ft_otool obj/otool.o $(OBJ) $(INC) $(FLG) $(LIB)
 	
 obj/%.o: src/%.c
 	@mkdir -p obj
 	gcc  -o $@ -c $< $(INC) $(FLG)
 
 lib:
-	rm -rf $(OBJ)
+	rm -rf $(OBJ) obj/nm.o obj/otool.o
 	rm -f ft_nm ft_otool
 	rm -rf *.dSYM
 
 clean:
-	rm -rf $(OBJ)
+	rm -rf $(OBJ) obj/nm.o obj/otool.o
 	cd libft && make clean
 	cd printf && make clean
 

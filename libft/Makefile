@@ -12,9 +12,9 @@
 
 NAME = libft.a
 
-DEB = -g3 -fsanitize=address
+DEB = #-g3 -fsanitize=address
 
-OPT = -O3
+OPT = -O2 -march=native
 
 FLAGS = -Wall -Wextra -Werror -funsigned-char -fno-signed-char  $(OPT)
 

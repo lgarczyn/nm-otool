@@ -24,9 +24,9 @@ OBJ = $(addprefix obj/, $(addsuffix .o, $(basename $(SRC))))
 
 LIB = -L ../libft/ -lft
 
-DEB = -g3 -fsanitize=address
+DEB = #-g3 -fsanitize=address
 
-OPT = -O3
+OPT = -O2 -march=native
 
 FLG = -Wall -Wextra -Werror -funsigned-char $(OPT)
 
