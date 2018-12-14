@@ -37,11 +37,9 @@ printf/libftprintf.a:
 	cd printf && make
 
 ft_nm:$(OBJ) obj/nm.o
-	@mkdir -p obj
 	gcc -o ft_nm obj/nm.o $(OBJ) $(INC) $(FLG) $(LIB)
 
 ft_otool:$(OBJ) obj/otool.o
-	@mkdir -p obj
 	gcc -o ft_otool obj/otool.o $(OBJ) $(INC) $(FLG) $(LIB)
 	
 obj/%.o: src/%.c
