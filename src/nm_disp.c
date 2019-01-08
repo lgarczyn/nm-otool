@@ -111,8 +111,7 @@ int					store_symtab(t_vm vm, t_symtab_cmd cmd, t_array *tokens)
 		token.name = string_table + token.sym.n_un.n_strx;
 		if (check_string(vm, token.name))
 			token.name = (u8*)"OUT OF BOUNDS";
-		if (*token.name)
-			CHECK(array_push(tokens, &token, sizeof(token)));
+		CHECK(array_push(tokens, &token, sizeof(token)));
 		i++;
 	}
 	return (OK);

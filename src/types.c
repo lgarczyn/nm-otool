@@ -29,20 +29,21 @@ char				get_sym_type(t_nlist_64 sym, t_array *stypes)
 	char			ret;
 
 	ret = '?';
-	if ((sym.n_type & N_TYPE) == N_UNDF)
-	{
-		if (sym.n_value)
-			ret = 'C';
-		else
-			ret = 'U';
-	}
+	if ((sym.n_type & N_TYPE) == N_UNDF && sym.n_value)
+		ret = 'C';
+	else if ((sym.n_type & N_TYPE) == N_UNDF)
+		ret = 'U';
 	else if ((sym.n_type & N_TYPE) == N_ABS)
 		ret = 'A';
 	else if ((sym.n_type & N_TYPE) == N_PBUD)
 		ret = 'U';
 	else if ((sym.n_type & N_TYPE) == N_SECT)
-		ret = ((char*)stypes->data)[
-			MIN(sym.n_sect - 1, stypes->pos)];
+	{
+		if (stypes->pos > sym.n_sect - 1 && stypes->data)
+			ret = ((char*)stypes->data)[sym.n_sect - 1];
+		else
+			ret = '?';
+	}
 	else if ((sym.n_type & N_TYPE) == N_INDR)
 		ret = 'I';
 	if ((sym.n_type & N_STAB) != 0)
